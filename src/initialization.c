@@ -18,6 +18,7 @@
 #include"../headers/initialization.h"
 #include"../headers/cli_processing.h"
 #include"../headers/shared_resources.h"
+#include"../headers/dynamic_field.h"
 
 const char *environment_path = "environments/";
 const char *auxiliary_path = "auxiliary/";

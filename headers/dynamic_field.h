@@ -8,4 +8,6 @@ void decay();
 Function_Status single_diffusion(bool is_moving);
 Function_Status multiple_diffusion();
 
+extern Int_Grid aux_dynamic_grid;
+
 #endif

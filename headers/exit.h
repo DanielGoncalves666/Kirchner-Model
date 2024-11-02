@@ -25,6 +25,7 @@ Function_Status calculate_kirchner_static_field();
 Function_Status calculate_all_static_weights();
 void deallocate_exits();
 
+extern Int_Grid exits_only_grid;
 extern Exits_Set exits_set;
 
 #endif

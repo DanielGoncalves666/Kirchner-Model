@@ -16,6 +16,8 @@
 #include"../headers/shared_resources.h"
 #include"../headers/printing_utilities.h"
 
+Int_Grid aux_dynamic_grid = NULL; // Grid used to help in the diffusion process.
+
 /**
  * Increases the cell at the given coordinates in one particle.
  * 

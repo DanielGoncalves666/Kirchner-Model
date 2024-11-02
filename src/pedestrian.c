@@ -28,6 +28,7 @@ typedef struct cell_conflict{
     int pedestrian_allowed;
 }cell_conflict;
 
+Int_Grid pedestrian_position_grid = NULL; // Grid containing pedestrians at their respective positions.
 Pedestrian_Set pedestrian_set = {NULL,0};
 
 static Pedestrian create_pedestrian(Location ped_coordinates);

@@ -15,6 +15,9 @@
 #include"../headers/cli_processing.h"
 #include"../headers/shared_resources.h"
 
+Int_Grid exits_only_grid = NULL; // Grid containing only the exits.
+                                 // Contains cells with either EXIT_CELL or EMPTY_CELL values.
+
 Exits_Set exits_set = {NULL, NULL, NULL, 0};
 
 static Exit create_new_exit(Location exit_coordinates);

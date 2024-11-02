@@ -10,17 +10,15 @@
 #include<stdbool.h>
 
 #include"../headers/grid.h"
+#include"../headers/exit.h"
+#include"../headers/pedestrian.h"
 #include"../headers/cli_processing.h"
 #include"../headers/shared_resources.h"
 
 Int_Grid obstacle_grid = NULL; // Grid containing walls and obstacles.
                                // Contains cells with either IMPASSABLE_OBJECT or EMPTY_CELL values.
                                // Any cell with an exit is assigned IMPASSABLE_OBJECT value.
-Int_Grid exits_only_grid = NULL; // Grid containing only the exits.
-                                 // Contains cells with either EXIT_CELL or EMPTY_CELL values.
-Int_Grid pedestrian_position_grid = NULL; // Grid containing pedestrians at their respective positions.
 Int_Grid heatmap_grid = NULL; // Grid containing the count of pedestrian visits per cell.
-Int_Grid aux_dynamic_grid = NULL; // Grid used to help in the diffusion process.
 
 /**
  * Dynamically allocates an integer matrix of dimensions determined by the function parameters.

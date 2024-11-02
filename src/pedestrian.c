@@ -10,7 +10,6 @@
 #include<stdbool.h>
 #include<math.h>
 
-#include"../headers/cell.h"
 #include"../headers/exit.h"
 #include"../headers/dynamic_field.h"
 #include"../headers/grid.h"
@@ -570,7 +569,8 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
         }
     }
 
-    normalization_value = pow(normalization_value, -1);
+    if(! normalization_value == 0) // Avoids 0 to the power of -1.
+        normalization_value = pow(normalization_value, -1);
 
     for(int i = 0; i < 3; i++)
     {

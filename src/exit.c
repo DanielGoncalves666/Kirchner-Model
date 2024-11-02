@@ -11,18 +11,16 @@
 
 #include"../headers/exit.h"
 #include"../headers/grid.h"
-#include"../headers/cell.h"
 #include"../headers/pedestrian.h"
 #include"../headers/cli_processing.h"
 #include"../headers/shared_resources.h"
 
-Exits_Set exits_set = {NULL, NULL, 0};
+Exits_Set exits_set = {NULL, NULL, NULL, 0};
 
 static Exit create_new_exit(Location exit_coordinates);
 static Function_Status calculate_static_weight(Exit current_exit);
 static void initialize_static_weight_grid(Exit current_exit);
 static bool is_exit_accessible(Exit s);
-static int identify_occupied_cells(Cell **occupied_cells, Exit current_exit);
 
 /**
  * Adds a new exit to the exits set.
@@ -407,39 +405,4 @@ static bool is_exit_accessible(Exit current_exit)
     }
 
     return false;
-}
-
-/**
- * Identify the cells occupied by a pedestrian still in the environment and adds Cell structures with its locations and static weights to the given list.
- * 
- * @param occupied_cells A pointer to a list of Cell structures, where the Cell structures referring to occupied cells will be appended.
- * @param current_exit The exit from which the static weight values will be obtained for the occupied cells.
- * 
- * @return An integer, indicating the number of occupied cells or -1, in case of a failure.
-*/
-static int identify_occupied_cells(Cell **occupied_cells, Exit current_exit)
-{
-    int num_occupied_cells = 0;
-
-    for(int p_index = 0; p_index < pedestrian_set.num_pedestrians; p_index++)
-    {
-        if(pedestrian_set.list[p_index]->state == GOT_OUT)
-            continue;
-
-        *occupied_cells = realloc(*occupied_cells, sizeof(Cell) * (num_occupied_cells + 1));
-        if(*occupied_cells == NULL)
-        {
-            fprintf(stderr, "Failure during reallocation of the occupied_cells list in identify_occupied_cells.\n");
-            return -1;
-        }
-
-        Location pedestrian_location = pedestrian_set.list[p_index]->current;
-
-        (*occupied_cells)[num_occupied_cells].coordinates = pedestrian_location;
-        (*occupied_cells)[num_occupied_cells].value = current_exit->static_weight[pedestrian_location.lin][pedestrian_location.col];
-
-        num_occupied_cells++;
-    }
-
-    return num_occupied_cells;
 }

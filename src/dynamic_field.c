@@ -11,7 +11,6 @@
 
 #include"../headers/exit.h"
 #include"../headers/grid.h"
-#include"../headers/cell.h"
 #include"../headers/pedestrian.h"
 #include"../headers/cli_processing.h"
 #include"../headers/shared_resources.h"

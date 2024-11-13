@@ -26,12 +26,15 @@ To compile and run the program, execute the following command in your shell, rep
 
 The environment files must be placed in the `environment/` directory. Each file must contain, in its first line, the dimensions of the environment (number of lines and columns, respectively). The subsequent lines must represent the actual environment, drawn with the following symbols:
 
-|Symbol    | Meaning              |
-|    ---   |        ---           |
-| \#       | Walls and obstacles  |
-| p or P   | Pedestrians          |
-| _        | Exits                |
-| .        | Nothing              |
+|Symbol    | Meaning                   |
+|    ---   |        ---                |
+| \#       | Impassable Obstacles      |
+| e or E   | Easy passable obstacles   |
+| m or M   | Medium passable obstacles |
+| h or H   | Hard passable obstacles   |
+| p or P   | Pedestrians               |
+| _        | Exits                     |
+| .        | Nothing                   |
 
 ### Auxiliary Files
 

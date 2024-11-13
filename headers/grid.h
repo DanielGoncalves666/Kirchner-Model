@@ -19,9 +19,13 @@ bool is_diagonal_valid(Location origin_cell, Location target_cell, Double_Grid f
 bool is_within_grid_lines(int line_coordinate);
 bool is_within_grid_columns(int column_coordinate);
 bool is_cell_empty(Location coordinates);
+bool is_obstacle(Location coordinates);
+bool is_traversable_obstacle(Location coordinates);
+double get_traversability_value(Location coordinates);
 void deallocate_grid(void **grid, int line_number);
 
 extern Int_Grid obstacle_grid;
+extern Double_Grid obstacle_traversability_grid;
 extern Int_Grid heatmap_grid;
 
 #endif

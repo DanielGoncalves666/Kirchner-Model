@@ -413,6 +413,15 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
                 return EIO;
             } 
 
+            if(cli_args->environment_origin == STRUCTURE_AND_PEDESTRIANS || cli_args->environment_origin == STRUCTURE_DOORS_AND_PEDESTRIANS)
+            {
+                if((kirchner_constants & 16U) == 0)
+                {
+                    num_constants++;
+                    kirchner_constants ^= 16U;
+                }
+            }
+
             if(num_constants == 4)
             {
                 for(int shift = 0; shift < 5; shift++)

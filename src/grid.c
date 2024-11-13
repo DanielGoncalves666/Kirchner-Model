@@ -16,8 +16,13 @@
 #include"../headers/shared_resources.h"
 
 Int_Grid obstacle_grid = NULL; // Grid containing walls and obstacles.
-                               // Contains cells with either IMPASSABLE_OBJECT or EMPTY_CELL values.
-                               // Any cell with an exit is assigned IMPASSABLE_OBJECT value.
+                               // Contains cells with IMPASSABLE_OBJECT, TRAVERSABLE_OBJECT or EMPTY_CELL values.
+                               // Any cell with an exit is assigned IMPASSABLE_OBJECT value and therefore needs special verification to be identified.
+Double_Grid obstacle_traversability_grid = NULL; 
+                            // Grid containing values in the range [0, 1] that indicate how easily a pedestrian can traverse each cell.
+                            // 0 represents an impassable cell (including exits). 
+                            // 0 < x < 1 represents different kinds of passable obstacles
+                            // 1 represents maximum ease of traversal. (empty cells)
 Int_Grid heatmap_grid = NULL; // Grid containing the count of pedestrian visits per cell.
 
 /**
@@ -288,14 +293,12 @@ bool is_diagonal_valid(Location origin_cell, Location coordinate_modifier, Doubl
     bool is_horizontal_blocked = false; // Indicates if the horizontal cell in the origin_cell's neighborhood, which is adjacent to origin_cell + coordinate_modifier, is blocked.
     bool is_vertical_blocked = false;// Indicates if the vertical cell in the origin_cell's neighborhood, which is adjacent to origin_cell + coordinate_modifier, is blocked.
 
-    if(is_within_grid_lines(origin_cell.lin + coordinate_modifier.lin) && 
-    floor_field[origin_cell.lin + coordinate_modifier.lin][origin_cell.col] == IMPASSABLE_OBJECT)
+    if(is_within_grid_lines(origin_cell.lin + coordinate_modifier.lin) && is_obstacle((Location) {origin_cell.lin + coordinate_modifier.lin,origin_cell.col}))
     {
         is_vertical_blocked = true;
     }
 
-    if(is_within_grid_columns(origin_cell.col + coordinate_modifier.col) && 
-    floor_field[origin_cell.lin][origin_cell.col + coordinate_modifier.col] == IMPASSABLE_OBJECT)
+    if(is_within_grid_columns(origin_cell.col + coordinate_modifier.col) &&  is_obstacle((Location) {origin_cell.lin,origin_cell.col + coordinate_modifier.col}))
     {
         is_horizontal_blocked = true;
     }
@@ -344,13 +347,46 @@ bool is_cell_empty(Location coordinates)
     if(pedestrian_position_grid[coordinates.lin][coordinates.col] != 0)
         return false;
 
-    if(obstacle_grid[coordinates.lin][coordinates.col] != EMPTY_CELL)
+    if(is_obstacle(coordinates))
         return false;
 
     if(exits_only_grid[coordinates.lin][coordinates.col] != EMPTY_CELL)
         return false;
 
     return true;
+}
+
+/**
+ * Verifies if the cell in the given location is an obstacle (i.e., impassable or traversable).
+ * 
+ * @param coordinates The coordinates of the cell
+ * @return bool, where True indicates that the cell is an obstacle, or False otherwise.
+ */
+bool is_obstacle(Location coordinates)
+{
+    return obstacle_grid[coordinates.lin][coordinates.col] != EMPTY_CELL;
+}
+
+/**
+ * Verifies if the cell in the given location is a traversable obstacle.
+ * 
+ * @param coordinates The coordinates of the cell
+ * @return bool, where True indicates that the cell is a traversable obstacle, or False otherwise.
+ */
+bool is_traversable_obstacle(Location coordinates)
+{
+    return obstacle_grid[coordinates.lin][coordinates.col] == TRAVERSABLE_OBJECT;
+}
+
+/**
+ * Gets the traversability of the cell in the given coordinates
+ * 
+ * @param coordinates The coordinates of the cell
+ * @return A double, the traversability value
+ */
+double get_traversability_value(Location coordinates)
+{
+    return obstacle_traversability_grid[coordinates.lin][coordinates.col];
 }
 
 /**

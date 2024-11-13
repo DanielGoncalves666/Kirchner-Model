@@ -369,6 +369,46 @@ void block_X_movement()
 }
 
 /**
+ * A test is done for every pedestrian that choses to move to a cell with a traversable object.
+ * If the test is successful, the pedestrian moves. If the test fails, the pedestrian remains still.
+ */
+void test_obstacle_crossing()
+{   
+    for(int p_index = 0; p_index < pedestrian_set.num_pedestrians; p_index++)
+    {
+        Pedestrian current_pedestrian = pedestrian_set.list[p_index];
+
+        if(current_pedestrian->state != MOVING)
+            continue;
+
+        Location target = current_pedestrian->target;
+
+        if(! is_traversable_obstacle(target))
+            continue;
+
+        // The pedestrian is trying to move to a cell with a traversable obstacle
+
+        double sorted_value = rand_within_limits(0,1);
+        if(sorted_value <= get_traversability_value(target) + TOLERANCE)
+        {
+            // Test successful
+
+            if(cli_args.show_debug_information)
+                printf("Ped %d - Movement to an traversable obstacle at %d %d successful.\n", current_pedestrian->id, target.lin, target.col);
+            continue;
+        }
+
+        // Test failed. The pedestrian will remain at the same cell.
+        current_pedestrian->state = STOPPED;
+
+        if(cli_args.show_debug_information)
+                printf("Ped %d - Movement to an traversable obstacle at %d %d failed.\n", current_pedestrian->id, target.lin, target.col);
+    }
+}
+
+
+
+/**
  *  Pedestrians in MOVING state are moved to their target location (the target Location is copied to the current Location). Upon reaching an exit, their state changes to LEAVING; those already in an exit transition to GOT_OUT. This is how the movement of a pedestrian is done.
  * 
  * @note If the immediate_exit flag is on, the pedestrians go directly from MOVING to GOT_OUT when a exit is reached.
@@ -553,16 +593,23 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
                         }
                     }
                 }
-
                 // Static floor field
                 current_pedestrian->probabilities[i][j] = exp(cli_args.ks * exits_set.static_floor_field[lin + i - 1][col + j - 1]);
+                //current_pedestrian->probabilities[i][j] = exp(cli_args.ks * exits_set.static_floor_field[lin + i - 1][col + j - 1] * 
+                //    (exits_only_grid[lin + i - 1][col + j - 1] == EXIT_CELL ? 1: obstacle_traversability_grid[lin + i - 1][col + j - 1]));
+
+
                 // Dynamic floor field
                 current_pedestrian->probabilities[i][j] *= exp(cli_args.kd * dynamic_floor_field_value); 
 
                 if(! (i == 1 && j == 1)) // Ignores when is the pedestrian's cell.
                     current_pedestrian->probabilities[i][j] *= 1 - (pedestrian_position_grid[lin + i - 1][col + j - 1] > 0 ? 1 : 0); // Multiply by 0 if cell is occupied
                 
-                current_pedestrian->probabilities[i][j] *= exits_set.static_floor_field[lin + i - 1][col + j - 1] == IMPASSABLE_OBJECT ? 0 : 1; // Multiply by 0 if cell has an obstacle.
+                if(exits_only_grid[lin + i - 1][col + j - 1] != EXIT_CELL) // If it is an exit cell, then the probability would be multiplied by 1.
+                {
+                    current_pedestrian->probabilities[i][j] *= obstacle_traversability_grid[lin + i - 1][col + j - 1];
+                    //current_pedestrian->probabilities[i][j] *= exits_set.static_floor_field[lin + i - 1][col + j - 1] == IMPASSABLE_OBJECT ? 0 : 1; // Multiply by 0 if cell has an obstacle                    
+                }
             
                 normalization_value += current_pedestrian->probabilities[i][j];
             }

@@ -115,8 +115,9 @@ Function_Status allocate_grids()
     pedestrian_position_grid = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
     heatmap_grid = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
     aux_dynamic_grid = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
-    if(obstacle_grid == NULL || exits_only_grid == NULL || pedestrian_position_grid == NULL 
-                                     || heatmap_grid == NULL    || aux_dynamic_grid == NULL)
+    obstacle_traversability_grid = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
+    if(obstacle_grid == NULL || exits_only_grid == NULL || pedestrian_position_grid == NULL || 
+       heatmap_grid == NULL    || aux_dynamic_grid == NULL || obstacle_traversability_grid == NULL)
     {
         fprintf(stderr,"Failure during allocation of the integer grids with dimensions: %d x %d.\n", cli_args.global_line_number, cli_args.global_column_number);
         return FAILURE;
@@ -203,9 +204,15 @@ Function_Status generate_environment()
         for(int h = 0; h < cli_args.global_column_number; h++)
         {
             if(i > 0 && i < cli_args.global_line_number - 1 && h > 0 && h < cli_args.global_column_number - 1)
+            {
                 obstacle_grid[i][h] = EMPTY_CELL;
+                obstacle_traversability_grid[i][h] = EMPTY_CELL_TRAVERSABILITY;
+            }
             else
+            {
                 obstacle_grid[i][h] = IMPASSABLE_OBJECT;
+                obstacle_traversability_grid[i][h] = IMPASSABLE_OBSC_TRAVERSABILITY;
+            }
         }
     }
 
@@ -325,7 +332,7 @@ Function_Status get_next_simulation_set(FILE *auxiliary_file, int *exit_number)
 }
 
 /**
- * Simply counts the number of empty cells in the environment (i.e, cells not occupied by walls or obstacles).
+ * Simply counts the number of empty cells in the environment (i.e, cells not occupied by walls or obstacles). Exits aren't counted as empty cells.
  * 
  * @return An integer, representing the number of empty cells.
  */
@@ -384,6 +391,7 @@ static Function_Status symbol_processing(char read_char, Location coordinates)
     {
         case '#':
             obstacle_grid[coordinates.lin][coordinates.col] = IMPASSABLE_OBJECT;
+            obstacle_traversability_grid[coordinates.lin][coordinates.col] = IMPASSABLE_OBSC_TRAVERSABILITY;
             break;
         case '_':
             if(origin_uses_static_exits() == true)
@@ -391,16 +399,31 @@ static Function_Status symbol_processing(char read_char, Location coordinates)
                 if(add_new_exit(coordinates) == FAILURE)
                     return FAILURE;
                 
-                obstacle_grid[coordinates.lin][coordinates.col] = IMPASSABLE_OBJECT;
                 exits_only_grid[coordinates.lin][coordinates.col] = EXIT_CELL;
             }
-            else
-                obstacle_grid[coordinates.lin][coordinates.col] = IMPASSABLE_OBJECT;
-                // If a exit is located in the middle of the environment a Wall is still put there.
+               
+            // If a exit is located in the middle of the environment a Wall is still put there.
+            obstacle_grid[coordinates.lin][coordinates.col] = IMPASSABLE_OBJECT;
+            obstacle_traversability_grid[coordinates.lin][coordinates.col] = IMPASSABLE_OBSC_TRAVERSABILITY;    
+            break;
+        case 'e':
+        case 'E':
+            obstacle_grid[coordinates.lin][coordinates.col] = TRAVERSABLE_OBJECT;
+            obstacle_traversability_grid[coordinates.lin][coordinates.col] = EASY_OBSC_TRAVERSABILITY;    
+            break;
+        case 'm':
+        case 'M':
+            obstacle_grid[coordinates.lin][coordinates.col] = TRAVERSABLE_OBJECT;
+            obstacle_traversability_grid[coordinates.lin][coordinates.col] = MEDIUM_OBSC_TRAVERSABILITY;    
+            break;
+        case 'h':
+        case 'H':
+            obstacle_grid[coordinates.lin][coordinates.col] = TRAVERSABLE_OBJECT;
+            obstacle_traversability_grid[coordinates.lin][coordinates.col] = HARD_OBSC_TRAVERSABILITY;    
             break;
         case '.':
             obstacle_grid[coordinates.lin][coordinates.col] = EMPTY_CELL;
-
+            obstacle_traversability_grid[coordinates.lin][coordinates.col] = EMPTY_CELL_TRAVERSABILITY;    
             break;
         case 'p':
         case 'P':
@@ -412,6 +435,7 @@ static Function_Status symbol_processing(char read_char, Location coordinates)
                 pedestrian_position_grid[coordinates.lin][coordinates.col] = pedestrian_set.list[pedestrian_set.num_pedestrians - 1]->id;
             }
             obstacle_grid[coordinates.lin][coordinates.col] = EMPTY_CELL;
+            obstacle_traversability_grid[coordinates.lin][coordinates.col] = EMPTY_CELL_TRAVERSABILITY;    
 
             break;
         case '\n':

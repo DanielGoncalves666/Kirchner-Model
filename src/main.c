@@ -200,6 +200,8 @@ static Function_Status run_simulations(FILE *output_file)
             if(conflict_solving() == FAILURE)
                 return FAILURE;
             
+            test_obstacle_crossing();
+
             apply_pedestrian_movement();
 
             update_pedestrian_position_grid();
@@ -280,4 +282,5 @@ static void deallocate_program_structures(FILE *output_file, FILE *auxiliary_fil
     deallocate_grid((void **) pedestrian_position_grid,cli_args.global_line_number);
     deallocate_grid((void **) heatmap_grid,cli_args.global_line_number);
     deallocate_grid((void **) aux_dynamic_grid, cli_args.global_line_number);
+    deallocate_grid((void **) obstacle_traversability_grid, cli_args.global_line_number);
 }

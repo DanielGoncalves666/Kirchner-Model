@@ -138,6 +138,9 @@ Function_Status calculate_kirchner_static_field()
             if(exits_set.static_floor_field[i][j] == IMPASSABLE_OBJECT)
                 continue;
 
+            if(exits_set.static_floor_field[i][j] == TRAVERSABLE_OBJECT)
+                exits_set.static_floor_field[i][j] = -1; // Gambiarra para que objetos transponíveis tenham seu campo de piso calculado
+
             for(int cell_index = 0; cell_index < num_exit_cells; cell_index++)
             {
                 Location current_exit_cell = exit_cell_coordinates[cell_index]; // The current exit cell being used as the reference.

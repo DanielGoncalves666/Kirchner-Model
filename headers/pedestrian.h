@@ -31,6 +31,7 @@ Function_Status identify_pedestrian_conflicts(Cell_Conflict *pedestrian_conflict
 Function_Status solve_pedestrian_conflicts(Cell_Conflict pedestrian_conflicts, int num_conflicts);
 void print_pedestrian_conflict_information(Cell_Conflict pedestrian_conflicts, int num_conflicts);
 void block_X_movement();
+void test_obstacle_crossing();
 void apply_pedestrian_movement();
 void update_pedestrian_position_grid();
 bool is_environment_empty();

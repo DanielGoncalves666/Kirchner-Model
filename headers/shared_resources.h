@@ -42,8 +42,15 @@ typedef struct{
 #define TOLERANCE 1E-10
 
 #define IMPASSABLE_OBJECT -1000
+#define TRAVERSABLE_OBJECT -1005
 #define EXIT_CELL -1001
 #define EMPTY_CELL -1002
+
+#define IMPASSABLE_OBSC_TRAVERSABILITY 0 
+#define HARD_OBSC_TRAVERSABILITY 0.3 
+#define MEDIUM_OBSC_TRAVERSABILITY 0.6 
+#define EASY_OBSC_TRAVERSABILITY 0.9 
+#define EMPTY_CELL_TRAVERSABILITY 1 
 
 bool origin_uses_auxiliary_data();
 bool origin_uses_static_pedestrians();

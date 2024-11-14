@@ -103,7 +103,11 @@ int main(int argc, char **argv)
         if(allocate_exits_set_fields() == FAILURE)
             return END_PROGRAM;
 
-        calculate_kirchner_static_field();
+        if(cli_args.calculate_static_field() == FAILURE) // Static Field
+            return FAILURE; 
+
+        if(cli_args.show_debug_information)
+                print_double_grid(exits_set.static_floor_field);
 
         if(cli_args.single_exit_flag == true && exits_set.num_exits == 1 && cli_args.output_format == OUTPUT_TIMESTEPS_COUNT)
             fprintf(output_file, "#1 "); 

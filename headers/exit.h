@@ -22,6 +22,7 @@ Function_Status add_new_exit(Location exit_coordinates);
 Function_Status expand_exit(Exit original_exit, Location new_coordinates);
 Function_Status allocate_exits_set_fields();
 Function_Status calculate_kirchner_static_field();
+Function_Status calculate_inverted_varas_static_field();
 Function_Status calculate_all_static_weights();
 void deallocate_exits();
 

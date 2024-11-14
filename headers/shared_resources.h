@@ -27,6 +27,11 @@ enum Environment_Origin {
     AUTOMATIC_CREATED
 };
 
+enum Static_Field_Method {
+    KIRCHNER_STATIC_FIELD = 1,
+    INVERTED_VARAS_STATIC_FIELD
+};
+
 typedef enum Function_Status {
     FAILURE = 0, 
     END_PROGRAM = 0,
@@ -42,8 +47,8 @@ typedef struct{
 #define TOLERANCE 1E-10
 
 #define IMPASSABLE_OBJECT -1000
-#define TRAVERSABLE_OBJECT -1005
-#define EXIT_CELL -1001
+#define TRAVERSABLE_OBJECT -1001
+#define EXIT_CELL 1 // The exit value in the Varas article.
 #define EMPTY_CELL -1002
 
 #define IMPASSABLE_OBSC_TRAVERSABILITY 0 

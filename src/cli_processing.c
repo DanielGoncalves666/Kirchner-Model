@@ -14,6 +14,7 @@
 #include<stdbool.h>
 
 #include"../headers/cli_processing.h"
+#include"../headers/exit.h"
 
 const char * argp_program_version = "Implementation of the Kirchner model for pedestrian evacuation using cellular automata.";
 const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchner (2002) model."
@@ -35,6 +36,10 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 "\t 1 - (default) Visual print of the environment.\n"
 "\t 2 -           Number of timesteps required for the termination of each simulation.\n"
 "\t 3 -           Heatmap of the environment cells.\n"
+"\n"
+"The --static-field option specifies the method used to calculate the static floor field. The following choices are available:\n"
+"\t 1 - (default) Kirchner's static floor field.\n"
+"\t 2 -           Inverted Varas's static floor field.\n"
 "\n"
 "The --dyn-definition option specifies how the dynamic floor field is defined, either as a particle density field or a velocity density field. In the particle density field, pedestrians leave particles in the cell they occupy (before any movement is attempted). In the velocity density field, they leave a particle only in their previous location when they move. The following choices are available:\n"
 "\t 1 - (default) Velocity Density Field.\n"
@@ -67,6 +72,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 #define OPT_STEP_VALUE 2002
 #define OPT_DYN_FIELD_DEFINITION 2003
 #define OPT_IGNORE_SELF_TRACE 2004
+#define OPT_STATIC_FIELD 3000
 
 struct argp_option options[] = {
     {"\nFiles:\n",0,0,OPTION_DOC,0,1},
@@ -86,6 +92,7 @@ struct argp_option options[] = {
     {"simu", 's', "SIMULATIONS", 0, "Number of simulations for each simulation set (default is 1).",8},
     {"seed", OPT_SEED, "SEED", 0, "Initial seed for the srand function (default is 0). If a negative number is given, the starting seed will be set to the value returned by time()."},
     {"diagonal", OPT_DIAGONAL, "DIAGONAL", 0, "The diagonal value for calculation of the static floor field (default is 1.5)."},
+    {"static-field", OPT_STATIC_FIELD, "STATIC", 0, "The method use to determine the static floor field. Defaults to 1 (Kirchner's method)."},
 
     {"\nVariables and toggle options related to pedestrians (all optional):\n",0,0,OPTION_DOC,0,9},
     {"ped", 'p', "PEDESTRIANS", 0, "Manually set the number of pedestrians to be randomly placed in the environment. If provided takes precedence over --density.",10},
@@ -126,6 +133,7 @@ Command_Line_Args cli_args = {
     .output_format = OUTPUT_VISUALIZATION,
     .environment_origin = STRUCTURE_DOORS_AND_PEDESTRIANS,
     .simulation_type = SIMULATION_DOOR_LOCATION_ONLY,
+    .calculate_static_field = calculate_kirchner_static_field,
     .write_to_file=false,
     .show_debug_information=false,
     .show_simulation_set_info=false,
@@ -379,6 +387,25 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
         case OPT_IGNORE_SELF_TRACE:
             cli_args->ignore_latest_self_trace = true;
             break;
+        case OPT_STATIC_FIELD:
+            enum Static_Field_Method static_field_method = (enum Static_Field_Method)  atoi(arg);
+            if(static_field_method < KIRCHNER_STATIC_FIELD || static_field_method > INVERTED_VARAS_STATIC_FIELD)
+            {
+                fprintf(stderr, "Invalid static field method.\n");
+                return EIO;
+            }
+
+            switch(static_field_method)
+            {
+                case INVERTED_VARAS_STATIC_FIELD:
+                    cli_args->calculate_static_field = calculate_inverted_varas_static_field;
+                    break;
+                case KIRCHNER_STATIC_FIELD:
+                default:
+                    cli_args->calculate_static_field = calculate_kirchner_static_field;
+            }
+
+            break;
         case ARGP_KEY_ARG:
             fprintf(stderr, "No positional argument was expect, but %s was given.\n", arg);
             return EINVAL;
@@ -510,6 +537,9 @@ void extract_full_command(char *full_command, int key, char *arg)
             break;
         case OPT_DYN_FIELD_DEFINITION:
             sprintf(aux, " --dyn-definiton=%s", arg);
+            break;
+        case OPT_STATIC_FIELD:
+            sprintf(aux, " --static-field=%s", arg);
             break;
         case 'o':
         case 'O':

@@ -15,6 +15,8 @@
 #include"../headers/cli_processing.h"
 #include"../headers/shared_resources.h"
 
+#include"../headers/printing_utilities.h"
+
 Int_Grid exits_only_grid = NULL; // Grid containing only the exits.
                                  // Contains cells with either EXIT_CELL or EMPTY_CELL values.
 
@@ -164,6 +166,77 @@ Function_Status calculate_kirchner_static_field()
 
             double normalized_distance = maximum_value - exits_set.static_floor_field[i][j];
             exits_set.static_floor_field[i][j] = normalized_distance;
+        }
+    }
+
+    return SUCCESS;
+}
+
+/**
+ * Calculates the inverted Varas static floor field. The largest values are placed at the exits, while the lowest are placed in the middle of the environment.
+ * 
+ * @return Function_Status: FAILURE (0) or SUCCESS (1).
+ */
+Function_Status calculate_inverted_varas_static_field()
+{
+    if(exits_set.num_exits <= 0 || exits_set.list == NULL || exits_set.static_floor_field == NULL)
+    {
+        fprintf(stderr,"The number of exits (%d) is invalid, the exits list is NULL or the static_floor_field grid is NULL.\n", exits_set.num_exits);
+        return FAILURE;
+    }
+
+    // Redundant Calculation.
+    if( calculate_all_static_weights() == FAILURE) // Static fields calculated by the Varas definition
+            return FAILURE;
+
+    Double_Grid current_exit = exits_set.list[0]->static_weight;
+    copy_double_grid(exits_set.static_floor_field, current_exit); // uses the first exit as the base for the merging
+    
+    for(int exit_index = 1; exit_index < exits_set.num_exits; exit_index++)
+    {
+        current_exit = exits_set.list[exit_index]->static_weight;
+        for(int i = 0; i < cli_args.global_line_number; i++)
+        {
+            for(int j = 0; j < cli_args.global_column_number; j++)
+            {
+                if(current_exit[i][j] == IMPASSABLE_OBJECT)
+                    continue; // Ignore cells with obstacles in the current exit 
+
+                if(exits_set.static_floor_field[i][j] == IMPASSABLE_OBJECT)
+                    exits_set.static_floor_field[i][j] = current_exit[i][j];
+                    // Cell was an obstacle in the first door, but an exit on another.
+
+                if(current_exit[i][j] < exits_set.static_floor_field[i][j])
+                    exits_set.static_floor_field[i][j] = current_exit[i][j];
+            }
+        }
+    }
+
+    // It's not efficient to realize a search when it could have been done in parallel with the static field merging, but is the simplest solution.
+    double max_value = -1; // Every value in the environment (with exception of the walls, that are ignored) have values above 0
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            if(exits_set.static_floor_field[i][j] == IMPASSABLE_OBJECT)
+                continue;
+
+            if(exits_set.static_floor_field[i][j] > max_value)
+                max_value = exits_set.static_floor_field[i][j];
+        }
+    }
+
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            if(exits_set.static_floor_field[i][j] == IMPASSABLE_OBJECT)
+                continue; 
+
+            // MAX_VALUE - CELL_VALUE + 1
+            // The +1 is needed because of the exits starting value.
+            double inverted_static_field_value = max_value - exits_set.static_floor_field[i][j] + 1;
+            exits_set.static_floor_field[i][j] = inverted_static_field_value;
         }
     }
 
@@ -398,7 +471,6 @@ static bool is_exit_accessible(Exit current_exit)
                 if(! is_within_grid_columns(c.col + k))
                     continue;
 
-                // De floor_field para static_weight AQUI
                 if(current_exit->static_weight[c.lin + j][c.col + k] == IMPASSABLE_OBJECT || current_exit->static_weight[c.lin + j][c.col + k] == EXIT_CELL)
                     continue;
 

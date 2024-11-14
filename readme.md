@@ -110,6 +110,8 @@ Simulation Variables (optional):
       --seed=SEED            Initial seed for the srand function (default is
                              0). If a negative number is given, the starting
                              seed will be set to the value returned by time().
+      --static-field=STATIC  The method use to determine the static floor
+                             field. Defaults to 1 (Kirchner's method).
   -s, --simu=SIMULATIONS     Number of simulations for each simulation set
                              (default is 1).
   
@@ -208,6 +210,11 @@ shall be written to the output stream. The following choices are available:
 simulation.
          3 -           Heatmap of the environment cells.
 
+The --static-field option specifies the method used to calculate the static
+floor field. The following choices are available:
+         1 - (default) Kirchner's static floor field.
+         2 -           Inverted Varas's static floor field.
+
 The --dyn-definition option specifies how the dynamic floor field is defined,
 either as a particle density field or a velocity density field. In the particle
 density field, pedestrians leave particles in the cell they occupy (before any
@@ -226,5 +233,8 @@ simulations varying the missing constant. In this case, the --min, --max, and
 Finally, if three or fewer constants are provided, the program will use default
 values for the remaining constants.
 
-Unnecessary options for some --env-load-method are ignored
+The --ignore-self-trace option is currently implemented for use with a velocity
+density field. Adapting this functionality for a particle density field has not
+been made.
+Unnecessary options for some --env-load-method are ignored.
 ```

@@ -14,6 +14,7 @@ typedef struct{
     enum Output_Format output_format;
     enum Environment_Origin environment_origin;
     enum Simulation_Type simulation_type;
+    Function_Status (*calculate_static_field)(); // Pointer to the function that will be responsible for calculating the static floor field.
     bool write_to_file;
     bool show_debug_information;
     bool show_simulation_set_info;

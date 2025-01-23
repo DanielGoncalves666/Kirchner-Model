@@ -5,6 +5,7 @@
 #include<stdbool.h>
 
 #include"shared_resources.h"
+#include"grid.h"
 
 typedef struct{
     char full_command[600];
@@ -14,7 +15,7 @@ typedef struct{
     enum Output_Format output_format;
     enum Environment_Origin environment_origin;
     enum Simulation_Type simulation_type;
-    Function_Status (*calculate_static_field)(); // Pointer to the function that will be responsible for calculating the static floor field.
+    Function_Status (*calculate_static_field)(Double_Grid a, bool b); // Pointer to the function that will be responsible for calculating the static floor field.
     bool write_to_file;
     bool show_debug_information;
     bool show_simulation_set_info;
@@ -25,6 +26,7 @@ typedef struct{
     bool use_density; // Indicates if the number os pedestrians to be inserted (if the case) is to be based on the density or in the total_num_pedestrians.
     bool velocity_density_field; // Indicates if the dynamic field is defined as a velocity density field or not (i.e, a particle density field).
     bool ignore_latest_self_trace;
+    bool traversable_as_impassable; // Indicates if the traversable objects should be considered as impassable.
     int global_line_number;
     int global_column_number;
     int num_simulations;

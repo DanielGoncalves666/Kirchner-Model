@@ -81,13 +81,20 @@ int main(int argc, char **argv)
         if(cli_args.show_simulation_set_info)
             print_simulation_set_information(output_file);
 
-        int returned_value = calculate_all_static_weights();
+        int returned_value = calculate_all_static_weights(cli_args.traversable_as_impassable);
         if( returned_value == FAILURE) 
             return END_PROGRAM;
         else if(returned_value == INACCESSIBLE_EXIT)
         {
             if(cli_args.output_format != OUTPUT_TIMESTEPS_COUNT)
-                fprintf(output_file, "At least one exit from the simulation set is inaccessible.\n");
+            {
+                fprintf(output_file, "At least one exit from the simulation set is inaccessible.");
+                if(cli_args.traversable_as_impassable)
+                {
+                    fprintf(output_file, "Verify if a traversable obstacle, considered as impassable (--traversable-off activated), is blocking any exit.");
+                }
+                fprintf(output_file, "\n");
+            }
             else
                 print_placeholder(output_file, -1);
 
@@ -103,8 +110,11 @@ int main(int argc, char **argv)
         if(allocate_exits_set_fields() == FAILURE)
             return END_PROGRAM;
 
-        if(cli_args.calculate_static_field() == FAILURE) // Static Field
-            return FAILURE; 
+        if(cli_args.calculate_static_field(exits_set.static_floor_field, false) == FAILURE) // Main static field
+            return FAILURE;
+
+        if(cli_args.calculate_static_field(exits_set.impassable_static_floor_field, true) == FAILURE) // Static field with traversable objects considered as impassable.
+            return FAILURE;  
 
         if(cli_args.show_debug_information)
                 print_double_grid(exits_set.static_floor_field);

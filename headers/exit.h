@@ -13,6 +13,7 @@ typedef struct exit * Exit;
 
 typedef struct{
     Double_Grid static_floor_field;
+    Double_Grid impassable_static_floor_field; // Static field considering traversable obstacles as impassable.
     Int_Grid dynamic_floor_field;
     Exit *list;
     int num_exits;
@@ -21,9 +22,9 @@ typedef struct{
 Function_Status add_new_exit(Location exit_coordinates);
 Function_Status expand_exit(Exit original_exit, Location new_coordinates);
 Function_Status allocate_exits_set_fields();
-Function_Status calculate_kirchner_static_field();
-Function_Status calculate_inverted_varas_static_field();
-Function_Status calculate_all_static_weights();
+Function_Status calculate_kirchner_static_field(Double_Grid target_grid, bool traversable_as_impassable);
+Function_Status calculate_inverted_varas_static_field(Double_Grid target_grid, bool traversable_as_impassable);
+Function_Status calculate_all_static_weights(bool traversable_as_impassable);
 void deallocate_exits();
 
 extern Int_Grid exits_only_grid;

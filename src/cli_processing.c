@@ -73,6 +73,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 #define OPT_DYN_FIELD_DEFINITION 2003
 #define OPT_IGNORE_SELF_TRACE 2004
 #define OPT_STATIC_FIELD 3000
+#define OPT_TRAVERSABLE_OFF 3001
 
 struct argp_option options[] = {
     {"\nFiles:\n",0,0,OPTION_DOC,0,1},
@@ -93,6 +94,7 @@ struct argp_option options[] = {
     {"seed", OPT_SEED, "SEED", 0, "Initial seed for the srand function (default is 0). If a negative number is given, the starting seed will be set to the value returned by time()."},
     {"diagonal", OPT_DIAGONAL, "DIAGONAL", 0, "The diagonal value for calculation of the static floor field (default is 1.5)."},
     {"static-field", OPT_STATIC_FIELD, "STATIC", 0, "The method use to determine the static floor field. Defaults to 1 (Kirchner's method)."},
+    {"traversable-off", OPT_TRAVERSABLE_OFF, 0, 0, "Indicates if traversable objects in the environment should be considered as impassable."},
 
     {"\nVariables and toggle options related to pedestrians (all optional):\n",0,0,OPTION_DOC,0,9},
     {"ped", 'p', "PEDESTRIANS", 0, "Manually set the number of pedestrians to be randomly placed in the environment. If provided takes precedence over --density.",10},
@@ -144,6 +146,7 @@ Command_Line_Args cli_args = {
     .use_density = true,
     .velocity_density_field = true,
     .ignore_latest_self_trace = false,
+    .traversable_as_impassable = false,
     .global_line_number = 0,
     .global_column_number = 0,
     .num_simulations = 1, // A single simulation by default.
@@ -406,6 +409,9 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
             }
 
             break;
+        case OPT_TRAVERSABLE_OFF:
+            cli_args->traversable_as_impassable = true;
+            break;
         case ARGP_KEY_ARG:
             fprintf(stderr, "No positional argument was expect, but %s was given.\n", arg);
             return EINVAL;
@@ -540,6 +546,9 @@ void extract_full_command(char *full_command, int key, char *arg)
             break;
         case OPT_STATIC_FIELD:
             sprintf(aux, " --static-field=%s", arg);
+            break;
+        case OPT_TRAVERSABLE_OFF:
+            sprintf(aux, " --traversable-off");
             break;
         case 'o':
         case 'O':

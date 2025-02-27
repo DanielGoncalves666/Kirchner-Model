@@ -33,6 +33,7 @@ Pedestrian_Set pedestrian_set = {NULL,0};
 
 static Pedestrian create_pedestrian(Location ped_coordinates);
 void calculate_transition_probabilities(Pedestrian current_pedestrian);
+double get_dynamic_floor_field_value(Pedestrian current_pedestrian, Location modifier);
 Location transition_selection(Pedestrian current_pedestrian);
 static bool are_pedestrian_paths_crossing(Pedestrian first_pedestrian, Pedestrian second_pedestrian);
 static Function_Status calculate_reduced_line_equation(Location origin, Location target, reduced_line_equation* line);
@@ -236,7 +237,7 @@ Function_Status identify_pedestrian_conflicts(Cell_Conflict *pedestrian_conflict
         }
 
         // The value of *target_cell is less than 0. This indicates that a conflict for the target_cell already exists. 
-        // Futhermore, the corresponding index of the cell_conflict for this cell can be obtained by the following expression.
+        // Furthermore, the corresponding index of the cell_conflict for this cell can be obtained by the following expression.
 
         int conflict_index = (*target_cell * -1) - 1;
         Cell_Conflict current_conflict = &(conflict_list[conflict_index]);
@@ -521,6 +522,11 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
     int lin = current_pedestrian->current.lin;
     int col = current_pedestrian->current.col;
 
+    double non_exponential_value[3][3] = {0}; // The value of the formula that isn't an exponential.
+    double exp_exponent[3][3] = {0};// Exponential exponent
+    double biggest_non_exponential_value = 0;
+    double biggest_exp_exponent = 0;
+
     double normalization_value = 0; // The N value in the formula
 
     for(int i = 0; i < 3; i++)
@@ -531,45 +537,55 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
             {
                 if(! is_within_grid_lines(lin + (i - 1)) || 
                    ! is_within_grid_columns(col + (j - 1)))
-                {
-                    current_pedestrian->probabilities[i][j] = 0;
                     continue;
-                }
 
-                int dynamic_floor_field_value = exits_set.dynamic_floor_field[lin + i - 1][col + j - 1];
-
-                if(cli_args.ignore_latest_self_trace)
+                // Ignores when is the pedestrian's cell.
+                if(! (i == 1 && j == 1))
                 {
-                    if(! are_same_coordinates(current_pedestrian->origin, current_pedestrian->previous))
-                    {
-                        // Guarantees that the pedestrian has already moved from its original position.
+                    if(pedestrian_position_grid[lin + i - 1][col + j - 1] > 0 )
+                        continue;
+                } 
 
-                        if(are_same_coordinates(current_pedestrian->previous, (Location) {lin + (i - 1), col + (j - 1)}))
-                        {
-                            // The cell of the neighborhood which the transition probability is being calculated is the cell that the pedestrian was previously located.
+                if(exits_set.static_floor_field[lin + i - 1][col + j - 1] == IMPASSABLE_OBJECT)
+                    continue;
+                else
+                    non_exponential_value[i][j] = 1;
+                  
+                int dynamic_floor_field_value = get_dynamic_floor_field_value(current_pedestrian, (Location) {i, j});
+                exp_exponent[i][j] = cli_args.ks * exits_set.static_floor_field[lin + i - 1][col + j - 1] + cli_args.kd * dynamic_floor_field_value;
 
-                            if(dynamic_floor_field_value > 0)
-                                dynamic_floor_field_value--;
-                        }
+                if(exp_exponent[i][j] > biggest_exp_exponent){
+                    biggest_exp_exponent = exp_exponent[i][j];
+                    biggest_non_exponential_value = non_exponential_value[i][j];
+                }
+                else if(exp_exponent[i][j] == biggest_exp_exponent){
+                    if(non_exponential_value[i][j] > biggest_non_exponential_value){
+                        biggest_non_exponential_value = non_exponential_value[i][j];
                     }
                 }
-
-                // Static floor field
-                current_pedestrian->probabilities[i][j] = exp(cli_args.ks * exits_set.static_floor_field[lin + i - 1][col + j - 1]);
-                // Dynamic floor field
-                current_pedestrian->probabilities[i][j] *= exp(cli_args.kd * dynamic_floor_field_value); 
-
-                if(! (i == 1 && j == 1)) // Ignores when is the pedestrian's cell.
-                    current_pedestrian->probabilities[i][j] *= 1 - (pedestrian_position_grid[lin + i - 1][col + j - 1] > 0 ? 1 : 0); // Multiply by 0 if cell is occupied
-                
-                current_pedestrian->probabilities[i][j] *= exits_set.static_floor_field[lin + i - 1][col + j - 1] == IMPASSABLE_OBJECT ? 0 : 1; // Multiply by 0 if cell has an obstacle.
-            
-                normalization_value += current_pedestrian->probabilities[i][j];
             }
-
         }
     }
 
+    // Normalization by maximum value division
+    for(int i = 0; i < 3; i++)
+    {
+        for(int j = 0; j < 3; j++)
+        {
+            if(biggest_non_exponential_value != 0)
+                non_exponential_value[i][j] /= biggest_non_exponential_value;
+
+            exp_exponent[i][j] -= biggest_exp_exponent;
+            if(exp_exponent[i][j] < -150){ // Double supports number up to 10^-308
+                non_exponential_value[i][j] = 0; // The value is so small that it is insignificant
+                exp_exponent[i][j] = 0;
+            }   
+
+            current_pedestrian->probabilities[i][j] = non_exponential_value[i][j] * exp(exp_exponent[i][j]);
+            normalization_value += current_pedestrian->probabilities[i][j];
+        }
+    }
+ 
     if(! normalization_value == 0) // Avoids 0 to the power of -1.
         normalization_value = pow(normalization_value, -1);
 
@@ -580,6 +596,39 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
             current_pedestrian->probabilities[i][j] *= normalization_value;
         }
     }
+}
+
+/**
+ * Obtains the pedestrian's dynamic floor field value, in the cell indicated by its current Location and by the given modifier.
+ * 
+ * @param current_pedestrian The pedestrian whom neighborhood dynamic values are being queried. 
+ * @param modifier A modifier to the cell in the pedestrian neighborhood whose dynamic value will be obtained. 
+ * 
+ * @return The dynamic floor field value for the specified cell in the pedestrian neighborhood.
+ */
+double get_dynamic_floor_field_value(Pedestrian current_pedestrian, Location modifier){
+    int lin = current_pedestrian->current.lin;
+    int col = current_pedestrian->current.col;
+
+    int dynamic_floor_field_value = exits_set.dynamic_floor_field[lin + modifier.lin - 1][col + modifier.col - 1];
+
+    if(cli_args.ignore_latest_self_trace)
+    {
+        if(! are_same_coordinates(current_pedestrian->origin, current_pedestrian->previous))
+        {
+            // Guarantees that the pedestrian has already moved from its original position.
+
+            if(are_same_coordinates(current_pedestrian->previous, (Location) {lin + (modifier.lin - 1), col + (modifier.col - 1)}))
+            {
+                // The cell of the neighborhood which the transition probability is being calculated is the cell that the pedestrian was previously located.
+
+                if(dynamic_floor_field_value > 0)
+                    dynamic_floor_field_value--;
+            }
+        }
+    }
+
+    return dynamic_floor_field_value;
 }
 
 /**

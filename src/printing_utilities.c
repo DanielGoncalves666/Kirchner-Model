@@ -186,6 +186,53 @@ void print_execution_status(int set_index, int set_quantity)
 }
 
 /**
+ * Print a status message about the execution of the program to stdout.
+ * 
+ * @param value Current varying value.
+ * @param max_value Max varying value.
+*/
+void print_varying_execution_status(double value, double max_value)
+{
+	char date_time[51];
+            
+	time_t current_time = time(NULL);
+	struct tm * time_information = localtime(&current_time);
+	
+	if(value != 0)
+	{
+		fprintf(stdout, "\033[A\033[2K");
+		fflush(stdout);
+	}
+	
+	strftime(date_time,50,"%F %Z %T",time_information);
+	fprintf(stdout, "Varying value: %6.3f/%.3f finalized at %s.\n", value, max_value, date_time);
+}
+
+
+/**
+ * Prints a status message about the status of the simulation execution within a simulation set to stdout.
+ * 
+ * @param simu_index Current simulation index within the simulation set.
+ * @param num_simulations Number of simulations to be performed.
+*/
+void print_simulation_index(int simu_index, int num_simulations)
+{
+	char date_time[51];
+            
+	time_t current_time = time(NULL);
+	struct tm * time_information = localtime(&current_time);
+	
+	if(simu_index > 1)
+	{
+		fprintf(stdout, "\033[A\033[2K");
+		fflush(stdout);
+	}
+	
+	strftime(date_time,50,"%F %Z %T",time_information);
+	fprintf(stdout, "Simulation: %5d/%d completed.\n", simu_index, num_simulations);
+}
+
+/**
  * Prints the given value `cli_args.num_simulation` times to the provided `stream`. The printed values serve as placeholders for simulations with invalid parameters, such as inaccessible exits.
  * 
  * @param stream Stream where the data will be written.

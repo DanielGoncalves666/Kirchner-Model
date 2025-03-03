@@ -140,6 +140,8 @@ int main(int argc, char **argv)
 
                 if(cli_args.output_format == OUTPUT_TIMESTEPS_COUNT)
                     fprintf(output_file, "\n");
+
+                print_varying_execution_status(*varying_constant, cli_args.max);
             }
         }
 
@@ -246,6 +248,8 @@ static Function_Status run_simulations(FILE *output_file)
             fprintf(output_file,"%d ", number_timesteps);
 
         fflush(output_file);
+
+        print_simulation_index(simu_index + 1, cli_args.num_simulations);
     }
 
     return SUCCESS;

@@ -49,6 +49,8 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 "Alternatively, if only four constants are provided, the program will perform simulations varying the missing constant. In this case, the --min, --max, and --step options define the range and increment step for that constant.\n"
 "Finally, if three or fewer constants are provided, the program will use default values for the remaining constants.\n"
 "\n"
+"Traversable obstacles only work with the adapted Varas static floor field.\n"
+"\n"
 "The --ignore-self-trace option is currently implemented for use with a velocity density field. Adapting this functionality for a particle density field has not been made."
 "\n"
 "Unnecessary options for some --env-load-method are ignored.\n";

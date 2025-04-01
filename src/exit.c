@@ -148,7 +148,7 @@ Function_Status calculate_kirchner_static_field(Double_Grid target_grid, bool tr
             {
                 if(traversable_as_impassable)
                 {
-                    target_grid[i][j] == IMPASSABLE_OBJECT; // TRAVERSABLE objects are turned into IMPASSABLE inside de static field
+                    target_grid[i][j] = IMPASSABLE_OBJECT; // TRAVERSABLE objects are turned into IMPASSABLE inside de static field
                     continue;
                 }
                 else
@@ -200,6 +200,7 @@ Function_Status calculate_inverted_varas_static_field(Double_Grid target_grid, b
         return FAILURE;
     }
 
+    // Recalculation necessary because the traversable obstacles might be considered differently from the calculation on the main function.
     if( calculate_all_static_weights(traversable_as_impassable) == FAILURE) // Static fields calculated by the Varas definition
             return FAILURE;
 

@@ -29,9 +29,7 @@ The environment files must be placed in the `environment/` directory. Each file 
 |Symbol    | Meaning                   |
 |    ---   |        ---                |
 | \#       | Impassable Obstacles      |
-| e or E   | Easy passable obstacles   |
-| m or M   | Medium passable obstacles |
-| h or H   | Hard passable obstacles   |
+| m or M   | Passable obstacles |
 | p or P   | Pedestrians               |
 | _        | Exits                     |
 | .        | Nothing                   |
@@ -110,7 +108,7 @@ Simulation Variables (optional):
       --seed=SEED            Initial seed for the srand function (default is
                              0). If a negative number is given, the starting
                              seed will be set to the value returned by time().
-      --static-field=STATIC  The method use to determine the static floor
+      --static-field=STATIC  The method used to determine the static floor
                              field. Defaults to 1 (Kirchner's method).
   -s, --simu=SIMULATIONS     Number of simulations for each simulation set
                              (default is 1).

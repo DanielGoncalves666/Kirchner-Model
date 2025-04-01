@@ -14,6 +14,7 @@ struct pedestrian {
     Location previous;
     Location current; 
     Location target;
+    int traversable_cooldown; // Number of timesteps before a pedestrian can attempt to move through a traversable obstacle. 
     double probabilities[3][3];
 };
 typedef struct pedestrian * Pedestrian;

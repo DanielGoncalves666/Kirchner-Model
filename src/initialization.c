@@ -406,21 +406,21 @@ static Function_Status symbol_processing(char read_char, Location coordinates)
             obstacle_grid[coordinates.lin][coordinates.col] = IMPASSABLE_OBJECT;
             obstacle_traversability_grid[coordinates.lin][coordinates.col] = IMPASSABLE_OBSC_TRAVERSABILITY;    
             break;
-        case 'e':
-        case 'E':
-            obstacle_grid[coordinates.lin][coordinates.col] = TRAVERSABLE_OBJECT;
-            obstacle_traversability_grid[coordinates.lin][coordinates.col] = EASY_OBSC_TRAVERSABILITY;    
-            break;
+        // case 'e':
+        // case 'E':
+        //     obstacle_grid[coordinates.lin][coordinates.col] = TRAVERSABLE_OBJECT;
+        //     obstacle_traversability_grid[coordinates.lin][coordinates.col] = EASY_OBSC_TRAVERSABILITY;    
+        //     break;
         case 'm':
         case 'M':
             obstacle_grid[coordinates.lin][coordinates.col] = TRAVERSABLE_OBJECT;
             obstacle_traversability_grid[coordinates.lin][coordinates.col] = MEDIUM_OBSC_TRAVERSABILITY;    
             break;
-        case 'h':
-        case 'H':
-            obstacle_grid[coordinates.lin][coordinates.col] = TRAVERSABLE_OBJECT;
-            obstacle_traversability_grid[coordinates.lin][coordinates.col] = HARD_OBSC_TRAVERSABILITY;    
-            break;
+        // case 'h':
+        // case 'H':
+        //     obstacle_grid[coordinates.lin][coordinates.col] = TRAVERSABLE_OBJECT;
+        //     obstacle_traversability_grid[coordinates.lin][coordinates.col] = HARD_OBSC_TRAVERSABILITY;    
+        //     break;
         case '.':
             obstacle_grid[coordinates.lin][coordinates.col] = EMPTY_CELL;
             obstacle_traversability_grid[coordinates.lin][coordinates.col] = EMPTY_CELL_TRAVERSABILITY;    

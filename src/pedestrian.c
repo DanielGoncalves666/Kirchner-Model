@@ -401,6 +401,7 @@ void test_obstacle_crossing()
 
         // Test failed. The pedestrian will remain at the same cell.
         current_pedestrian->state = STOPPED;
+        current_pedestrian->traversable_cooldown = 6; // A cooldown of 6 timesteps is set (At the end of the current timestep it will be down to 5).
 
         if(cli_args.show_debug_information)
                 printf("Ped %d - Movement to an traversable obstacle at %d %d failed.\n", current_pedestrian->id, target.lin, target.col);
@@ -496,13 +497,20 @@ void update_pedestrian_position_grid()
 
 /**
  * Reset the state of all pedestrians to MOVING, except for those in the states GOT_OUT and LEAVING.
+ * Furthermore, subtracts one unit from the pedestrian traversable cooldown.
 */
 void reset_pedestrian_state()
 {
     for(int p_index = 0; p_index < pedestrian_set.num_pedestrians; p_index++)
     {
-        if(pedestrian_set.list[p_index]->state != GOT_OUT && pedestrian_set.list[p_index]->state != LEAVING)
-            pedestrian_set.list[p_index]->state = MOVING;
+        Pedestrian current_pedestrian = pedestrian_set.list[p_index];
+
+        if(current_pedestrian->state != GOT_OUT && current_pedestrian->state != LEAVING){
+            current_pedestrian->state = MOVING;
+
+            if(current_pedestrian->traversable_cooldown > 0)
+                current_pedestrian->traversable_cooldown--;
+        }
     }
 }
 
@@ -520,6 +528,7 @@ void reset_pedestrians_structures()
         current_pedestrian->previous = current_pedestrian->origin;
         current_pedestrian->current = current_pedestrian->origin;
         current_pedestrian->state = MOVING;
+        current_pedestrian->traversable_cooldown = 0;
         pedestrian_position_grid[current_pedestrian->current.lin][current_pedestrian->current.col] = current_pedestrian->id;
     }
 }
@@ -544,6 +553,7 @@ static Pedestrian create_pedestrian(Location ped_coordinates)
         new_pedestrian->current = new_pedestrian->previous = new_pedestrian->origin = ped_coordinates;
         new_pedestrian->target = (Location) {-1, -1};
         new_pedestrian->state = MOVING;
+        new_pedestrian->traversable_cooldown = 0;
         // probabilities are already all set to 0.
     
         heatmap_grid[ped_coordinates.lin][ped_coordinates.col]++;
@@ -561,6 +571,13 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
 {
     int lin = current_pedestrian->current.lin;
     int col = current_pedestrian->current.col;
+
+    Double_Grid static_field = NULL;
+
+    if(cli_args.traversable_as_impassable || current_pedestrian->traversable_cooldown > 0)
+        static_field = exits_set.impassable_static_floor_field;
+    else
+        static_field = exits_set.static_floor_field;
 
     double non_exponential_value[3][3] = {0}; // The value of the formula that isn't an exponential.
     double exp_exponent[3][3] = {0};// Exponential exponent
@@ -587,24 +604,19 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
                 } 
 
                 if(exits_only_grid[lin + i - 1][col + j - 1] != EXIT_CELL){
-                    if(obstacle_grid[lin + i - 1][col + j - 1] == IMPASSABLE_OBJECT)
-                        continue;
+                    if(static_field[lin + i - 1][col + j - 1] == IMPASSABLE_OBJECT)
+                        continue;// Using static_field instead of obstacle_grid allows to check for the traversable obstacles when the pedestrian is not allowed to go over them.
 
-                    non_exponential_value[i][j] = obstacle_traversability_grid[lin + i - 1][col + j - 1];
-                    //current_pedestrian->probabilities[i][j] *= exits_set.static_floor_field[lin + i - 1][col + j - 1] == IMPASSABLE_OBJECT ? 0 : 1; // Multiply by 0 if cell has an obstacle 
+                    if((i == 1 && j == 1) && is_traversable_obstacle(current_pedestrian->current))
+                        non_exponential_value[i][j] = 1;// If the pedestrian is in a cell with a traversable obstacle, the traversability value is considered to be the same as an empty cell.
+                    else
+                        non_exponential_value[i][j] = obstacle_traversability_grid[lin + i - 1][col + j - 1];
                 }
                 else
-                    non_exponential_value[i][j] = 1;
-
-                if(exits_set.static_floor_field[lin + i - 1][col + j - 1] == IMPASSABLE_OBJECT)
-                    continue;
-                else
-                    non_exponential_value[i][j] = 1;
+                    non_exponential_value[i][j] = 1; // Exit
                   
                 int dynamic_floor_field_value = get_dynamic_floor_field_value(current_pedestrian, (Location) {i, j});
-                exp_exponent[i][j] = cli_args.ks * exits_set.static_floor_field[lin + i - 1][col + j - 1] + cli_args.kd * dynamic_floor_field_value;
-                //current_pedestrian->probabilities[i][j] = exp(cli_args.ks * exits_set.static_floor_field[lin + i - 1][col + j - 1] * 
-                //    (exits_only_grid[lin + i - 1][col + j - 1] == EXIT_CELL ? 1: obstacle_traversability_grid[lin + i - 1][col + j - 1]));
+                exp_exponent[i][j] = cli_args.ks * static_field[lin + i - 1][col + j - 1] + cli_args.kd * dynamic_floor_field_value;
 
                 if(exp_exponent[i][j] > biggest_exp_exponent){
                     biggest_exp_exponent = exp_exponent[i][j];
@@ -618,7 +630,7 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
             }
         }
     }
-
+ 
     // Normalization by maximum value division
     for(int i = 0; i < 3; i++)
     {

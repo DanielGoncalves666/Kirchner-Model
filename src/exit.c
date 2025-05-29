@@ -9,6 +9,7 @@
 #include<stdlib.h>
 #include<stdbool.h>
 
+#include"../headers/cell.h"
 #include"../headers/exit.h"
 #include"../headers/grid.h"
 #include"../headers/pedestrian.h"
@@ -23,9 +24,16 @@ Int_Grid exits_only_grid = NULL; // Grid containing only the exits.
 Exits_Set exits_set = {NULL, NULL, NULL, 0};
 
 static Exit create_new_exit(Location exit_coordinates);
-static Function_Status calculate_static_weight(Exit current_exit, bool traversable_as_impassable);
-static void initialize_static_weight_grid(Exit current_exit, bool traversable_as_impassable);
-static bool is_exit_accessible(Exit s);
+static Function_Status calculate_static_weight(Exit current_exit, int grid_to_calculate, bool traversable_as_impassable);
+static Function_Status calculate_dynamic_weight(Exit current_exit, bool traversable_as_impassable);
+static Function_Status calculate_exit_floor_field(Exit current_exit, bool traversable_as_impassable);
+static void initialize_static_weight_grid(Exit current_exit, int grid_to_calculate, bool traversable_as_impassable);
+static void initialize_dynamic_weight_grid(Exit current_exit, bool traversable_as_impassable);
+static Function_Status calculate_all_dynamic_weights(bool traversable_as_impassable);
+static Function_Status calculate_all_exits_floor_field(bool traversable_as_impassable);
+static void invert_grid(Double_Grid target_grid);
+static bool is_exit_accessible(Exit current_exit, int grid_to_consider);
+static int identify_occupied_cells(Cell **occupied_cells, Exit current_exit);
 
 /**
  * Adds a new exit to the exits set.
@@ -200,10 +208,6 @@ Function_Status calculate_inverted_varas_static_field(Double_Grid target_grid, b
         return FAILURE;
     }
 
-    // Recalculation necessary because the traversable obstacles might be considered differently from the calculation on the main function.
-    if( calculate_all_static_weights(traversable_as_impassable) == FAILURE) // Static fields calculated by the Varas definition
-            return FAILURE;
-
     Double_Grid current_exit = exits_set.list[0]->static_weight;
     copy_double_grid(target_grid, current_exit); // uses the first exit as the base for the merging
     
@@ -227,39 +231,61 @@ Function_Status calculate_inverted_varas_static_field(Double_Grid target_grid, b
         }
     }
 
-    // It's not efficient to realize a search when it could have been done in parallel with the static field merging, but is the simplest solution.
-    double max_value = -1; // Every value in the environment (with exception of the walls, that are ignored) have values above 0
-    for(int i = 0; i < cli_args.global_line_number; i++)
-    {
-        for(int j = 0; j < cli_args.global_column_number; j++)
-        {
-            if(target_grid[i][j] == IMPASSABLE_OBJECT)
-                continue;
-
-            if(target_grid[i][j] > max_value)
-                max_value = target_grid[i][j];
-        }
-    }
-
-    for(int i = 0; i < cli_args.global_line_number; i++)
-    {
-        for(int j = 0; j < cli_args.global_column_number; j++)
-        {
-            if(target_grid[i][j] == IMPASSABLE_OBJECT)
-                continue; 
-
-            // MAX_VALUE - CELL_VALUE + 1
-            // The +1 is needed because of the exits starting value.
-            double inverted_static_field_value = max_value - target_grid[i][j] + 1;
-            target_grid[i][j] = inverted_static_field_value;
-        }
-    }
+    invert_grid( target_grid);
 
     return SUCCESS;
 }
 
 /**
- * Calculates the static weights of every exit in the exits_set.
+ * Calculates the inverted Alizadeh Floor Field. The largest values are placed at the exits, while the lowest are placed in the middle of the environment.
+ *  
+ * @note The static weight calculation for normal and traversable as impassable must be calculated before this function is called.
+ *  
+ * @param target_grid The double grid where the calculation will be stored.
+ * @param traversable_as_impassable A boolean, indicating on which static_floor_field the result of the combination of the exits floor fields should be stored. If true, stores in the impassable_static_floor_field, otherwise in the static_floor_field.
+ * 
+ * @return Function_Status: FAILURE (0) or SUCCESS (1).
+*/
+Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid, bool traversable_as_impassable)
+{
+    if(exits_set.num_exits <= 0 || exits_set.list == NULL || target_grid == NULL)
+    {
+        fprintf(stderr,"The number of exits (%d) is invalid or the exits_set structure has at least one NULL value.\n", exits_set.num_exits);
+        return FAILURE;
+    }
+
+    if( fill_double_grid(target_grid, cli_args.global_line_number, cli_args.global_column_number, 0) == FAILURE)
+        return FAILURE;
+
+    if( calculate_all_dynamic_weights(traversable_as_impassable) == FAILURE) // Dynamic fields calculated by the Alizadeh definition.
+        return FAILURE;
+
+    if( calculate_all_exits_floor_field(traversable_as_impassable) == FAILURE) // Alizadeh floor field calculation
+        return FAILURE;
+
+    Double_Grid current_exit = exits_set.list[0]->floor_field;
+    copy_double_grid(target_grid, current_exit); // uses the first exit as the base for the merging
+    
+    for(int exit_index = 1; exit_index < exits_set.num_exits; exit_index++)
+    {
+        current_exit = exits_set.list[exit_index]->floor_field;
+        for(int i = 0; i < cli_args.global_line_number; i++)
+        {
+            for(int h = 0; h < cli_args.global_column_number; h++)
+            {
+                if(target_grid[i][h] > current_exit[i][h])
+                    target_grid[i][h] = current_exit[i][h];
+            }
+        }
+    }
+
+    invert_grid(target_grid);
+
+    return SUCCESS;
+}
+
+/**
+ * Calculates the static weights (both) of every exit in the exits_set.
  * 
  * @param traversable_as_impassable A boolean, indicating if the traversable obstacles in the environment should be considered as impassable (True) or not (False).
  * 
@@ -273,9 +299,17 @@ Function_Status calculate_all_static_weights(bool traversable_as_impassable)
         return FAILURE;
     }
 
+    Function_Status returned_status;
+
     for(int exit_index = 0; exit_index < exits_set.num_exits; exit_index++)
     {
-        Function_Status returned_status = calculate_static_weight(exits_set.list[exit_index], traversable_as_impassable);
+        // normal static_weight
+        returned_status = calculate_static_weight(exits_set.list[exit_index], NORMAL_STATIC_WEIGHT, traversable_as_impassable); 
+        if(returned_status != SUCCESS )
+            return returned_status;
+
+        // impassable_static_weight
+        returned_status = calculate_static_weight(exits_set.list[exit_index], IMPASSABLE_STATIC_WEIGHT, traversable_as_impassable); 
         if(returned_status != SUCCESS )
             return returned_status;
     }
@@ -335,6 +369,9 @@ static Exit create_new_exit(Location exit_coordinates)
             new_exit->width = 1;
 
             new_exit->static_weight = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
+            new_exit->impassable_static_weight = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
+            new_exit->alizadeh_dynamic_weight = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
+            new_exit->floor_field = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
         }
 
         return new_exit;
@@ -347,23 +384,27 @@ static Exit create_new_exit(Location exit_coordinates)
  * Calculates the static weights for the given exit.
  * 
  * @param current_exit Exit for which the static weights will be calculated.
+ * @param grid_to_calculate An integer, indicating which static_weight to calculate.    
+ *                          0 for the normal static_weight, or any other value for the impassable_static_weight.
+ *                          In the former the status of the traversable objects are determined by the traversable_as_impassable argument and the latter always 
+ *                              considers traversable objects as impassable.
  * @param traversable_as_impassable A boolean, indicating if the traversable obstacles in the environment should be considered as impassable (True) or not (False).
  * 
  * @return Function_Status: FAILURE (0), SUCCESS (1) or INACCESSIBLE_EXIT(2).
 */
-static Function_Status calculate_static_weight(Exit current_exit, bool traversable_as_impassable)
+static Function_Status calculate_static_weight(Exit current_exit, int grid_to_calculate, bool traversable_as_impassable)
 {
     double floor_field_rule[][3] = 
             {{cli_args.diagonal,    1.0,    cli_args.diagonal},
              {       1.0,           0.0,           1.0       },
              {cli_args.diagonal,    1.0,    cli_args.diagonal}};
 
-    initialize_static_weight_grid(current_exit, traversable_as_impassable);
-
-    if(is_exit_accessible(current_exit) == false)
-        return INACCESSIBLE_EXIT;
-
-    Double_Grid static_weight = current_exit->static_weight;
+    initialize_static_weight_grid(current_exit, grid_to_calculate, traversable_as_impassable);
+    
+    if(is_exit_accessible(current_exit, grid_to_calculate || traversable_as_impassable) == false)
+    return INACCESSIBLE_EXIT;
+             
+    Double_Grid static_weight = grid_to_calculate ? current_exit->impassable_static_weight : current_exit->static_weight;
     Double_Grid auxiliary_grid = allocate_double_grid(cli_args.global_line_number,cli_args.global_column_number);
     // stores the chances for the timestep t + 1
 
@@ -433,16 +474,151 @@ static Function_Status calculate_static_weight(Exit current_exit, bool traversab
 }
 
 /**
- * Copies the structure (obstacles and walls) from the obstacle_grid to the static weight grid 
- * for the provided exit. Additionally, adds the exit cells to it.
+ * Calculates the dynamic weights for the given exit.
+ * 
+ * @note To ensure that the Final Floor Field matches the examples provided in the Alizadeh article, the division by 2 on the num_cells_equal_value needs to be removed.
+ * 
+ * @param current_exit Exit for which the dynamic weights will be calculated.
+ * @param traversable_as_impassable A boolean, indicating if the static weight grid to be considered is the standard or the one with the traversable objects considered as impassable (impassable_static_weight).
+ * 
+ * @return Function_Status: FAILURE (0) or SUCCESS (1).
+*/
+static Function_Status calculate_dynamic_weight(Exit current_exit, bool traversable_as_impassable)
+{
+    Cell *occupied_cells = NULL;
+
+    int num_occupied_cells = identify_occupied_cells(&occupied_cells, current_exit);
+    if(num_occupied_cells == -1)
+        return FAILURE;
+    
+    quick_sort(occupied_cells, 0, num_occupied_cells - 1);
+    
+    initialize_dynamic_weight_grid(current_exit, traversable_as_impassable);
+    Double_Grid dynamic_weight = current_exit->alizadeh_dynamic_weight;
+    Double_Grid static_weight = traversable_as_impassable ? current_exit->impassable_static_weight : current_exit->static_weight; 
+
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int h = 0; h < cli_args.global_column_number; h++)
+        {
+            if(dynamic_weight[i][h] == -1)
+                continue;
+
+            double static_weight_value = static_weight[i][h];
+
+            int num_cells_equal_value = 0;
+            int num_cells_smaller_value = count_cells_with_smaller_value(occupied_cells, num_occupied_cells, 
+                static_weight_value, &num_cells_equal_value);
+
+            if(num_cells_smaller_value == -1)
+                num_cells_smaller_value = 0; // Not a single cell smaller than the current static_weight_value.
+            
+
+
+            dynamic_weight[i][h] = (num_cells_smaller_value + num_cells_equal_value) / (double) current_exit->width;
+        }
+    }
+
+    free(occupied_cells);
+
+    return SUCCESS;
+}
+
+/**
+ * Combines the static and dynamic weights into the floor field for the given exit.
+ * 
+ * @note Before calling this function, it is imperative that the static weights of the given exit have already been calculated.
+ * 
+ * @param current_exit Exit for which the floor field will be calculated.
+ * @param traversable_as_impassable A boolean, indicating if the static weight grid to be considered is the standard or the one with the traversable objects considered as impassable (impassable_static_weight).
+ * @return Function_Status: FAILURE (0) or SUCCESS (1).
+*/
+static Function_Status calculate_exit_floor_field(Exit current_exit, bool traversable_as_impassable)
+{
+    if(current_exit == NULL)
+    {
+        fprintf(stderr, "A Null pointer was received in 'calculate_exit_floor_field' instead of a valid Exit.\n");
+        return FAILURE;
+    }
+
+    Double_Grid static_weight = traversable_as_impassable ? current_exit->impassable_static_weight : current_exit->static_weight;
+
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int h = 0; h < cli_args.global_column_number; h++)
+        {
+            if(current_exit->alizadeh_dynamic_weight[i][h] == -1) // Cells with no dynamic weight (obstacles and walls).
+                current_exit->floor_field[i][h] = static_weight[i][h];
+            else
+                current_exit->floor_field[i][h] = static_weight[i][h] + cli_args.alpha * current_exit->alizadeh_dynamic_weight[i][h];
+        }
+    }
+
+    return SUCCESS;
+}
+
+/**
+ * Calculates the dynamic weights of every exit in the exits_set.
  * 
  * @param traversable_as_impassable A boolean, indicating if the traversable obstacles in the environment should be considered as impassable (True) or not (False).
  * 
- * @param current_exit The exit for which the static weights will be initialized.
+ * @return Function_Status: FAILURE (0) or SUCCESS (1).
 */
-static void initialize_static_weight_grid(Exit current_exit, bool traversable_as_impassable)
+static Function_Status calculate_all_dynamic_weights(bool traversable_as_impassable)
 {
-    // TODO: If current_exit == NULL, include all available exits in a provided grid.
+    if(exits_set.num_exits <= 0 || exits_set.list == NULL)
+    {
+        fprintf(stderr,"The number of exits (%d) is invalid or the exits list is NULL.\n", exits_set.num_exits);
+        return FAILURE;
+    }
+
+    for(int exit_index = 0; exit_index < exits_set.num_exits; exit_index++)
+    {
+        if(calculate_dynamic_weight(exits_set.list[exit_index], traversable_as_impassable) == FAILURE)
+            return FAILURE;
+    }
+
+    return SUCCESS;
+}
+
+/**
+ * Calculates the floor field of every exit in the exits_set.
+ * 
+ * @param traversable_as_impassable A boolean, indicating if the traversable obstacles in the environment should be considered as impassable (True) or not (False).
+ * 
+ * @return Function_Status: FAILURE (0) or SUCCESS (1).
+*/
+static Function_Status calculate_all_exits_floor_field(bool traversable_as_impassable)
+{
+    if(exits_set.num_exits <= 0 || exits_set.list == NULL)
+    {
+        fprintf(stderr,"The number of exits (%d) is invalid or the exits list is NULL.\n", exits_set.num_exits);
+        return FAILURE;
+    }
+
+    for(int exit_index = 0; exit_index < exits_set.num_exits; exit_index++)
+    {
+        if(calculate_exit_floor_field(exits_set.list[exit_index], traversable_as_impassable) == FAILURE)
+            return FAILURE;
+    }
+
+    return SUCCESS;
+}
+
+/**
+ * Copies the structure (obstacles and walls) from the obstacle_grid to the static weight grid 
+ * for the provided exit. Additionally, adds the exit cells to it.
+ * 
+ * @param current_exit The exit for which the static weights will be initialized.
+ * @param grid_to_calculate An integer, indicating which static_weight to initialize.    
+ *                          0 for the normal static_weight, or any other value for the impassable_static_weight.
+ *                          In the former the status of the traversable objects are determined by the traversable_as_impassable argument and the latter always 
+ *                              considers traversable objects as impassable.
+ * @param traversable_as_impassable A boolean, indicating if the traversable obstacles in the environment should be considered as impassable (True) or not (False).
+*/
+static void initialize_static_weight_grid(Exit current_exit, int grid_to_calculate, bool traversable_as_impassable)
+{
+    Double_Grid static_weight = grid_to_calculate ? current_exit->impassable_static_weight : current_exit->static_weight;
 
     // Add walls and obstacles to the static weight grid.
     for(int i = 0; i < cli_args.global_line_number; i++)
@@ -451,11 +627,11 @@ static void initialize_static_weight_grid(Exit current_exit, bool traversable_as
         {
             double cell_value = obstacle_grid[i][h];
             if(cell_value == IMPASSABLE_OBJECT)
-                current_exit->static_weight[i][h] = IMPASSABLE_OBJECT;
-            else if(traversable_as_impassable && cell_value == TRAVERSABLE_OBJECT)
-                current_exit->static_weight[i][h] = IMPASSABLE_OBJECT;
+                static_weight[i][h] = IMPASSABLE_OBJECT;
+            else if((traversable_as_impassable || grid_to_calculate == IMPASSABLE_STATIC_WEIGHT) && cell_value == TRAVERSABLE_OBJECT)
+                static_weight[i][h] = IMPASSABLE_OBJECT;
             else
-                current_exit->static_weight[i][h] = 0.0; // Traversable objects are ignored for the calculation of the static field (if they aren't considered as IMPASSABLE).
+                static_weight[i][h] = 0.0; // Traversable objects are ignored for the calculation of the static field (if they aren't considered as IMPASSABLE).
         }
     }
 
@@ -464,22 +640,85 @@ static void initialize_static_weight_grid(Exit current_exit, bool traversable_as
     {
         Location exit_cell = current_exit->coordinates[i];
 
-        current_exit->static_weight[exit_cell.lin][exit_cell.col] = EXIT_CELL;
+        static_weight[exit_cell.lin][exit_cell.col] = EXIT_CELL;
+    }
+}
+
+/**
+ * Adds an indicator (-1) to the dynamic weight grid to ensure that the positions occupied by obstacles or walls do not have the dynamic weight calculated.
+ * 
+ * @param traversable_as_impassable A boolean, indicating if the traversable obstacles in the environment should be considered as impassable (True) or not (False).
+ * 
+ * @param current_exit The exit for which the dynamic weights will be initialized.
+*/
+static void initialize_dynamic_weight_grid(Exit current_exit, bool traversable_as_impassable)
+{
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int h = 0; h < cli_args.global_column_number; h++)
+        {
+            double cell_value = obstacle_grid[i][h];
+            if(cell_value == IMPASSABLE_OBJECT || (cell_value == TRAVERSABLE_OBJECT && traversable_as_impassable))
+                current_exit->alizadeh_dynamic_weight[i][h] = -1;
+            else
+                current_exit->alizadeh_dynamic_weight[i][h] = 0.0;
+        }
+    }
+}
+
+/**
+ * Inverts the contents of the given grid in a way that the greatest value will become the lowest and vice-versa.
+ * 
+ * @param target_grid The grid whose content will be inverted.
+ * @param traversable_as_impassable A boolean, indicating if the traversable obstacles in the environment should be considered as impassable (True) or not (False).
+ */
+static void invert_grid(Double_Grid target_grid){
+    
+    double max_value = -1; // Every value in the environment (with exception of the walls, that are ignored) have values above 0
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            // TRAVERSABLE_OBJECT check just in case.
+            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == TRAVERSABLE_OBJECT)
+                continue;
+
+            if(target_grid[i][j] > max_value)
+                max_value = target_grid[i][j];
+        }
+    }
+
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == TRAVERSABLE_OBJECT)
+                continue; 
+
+            // MAX_VALUE - CELL_VALUE + 1
+            // The +1 is needed because of the exits starting value.
+            double inverted_static_field_value = max_value - target_grid[i][j] + 1;
+            target_grid[i][j] = inverted_static_field_value;
+        }
     }
 }
 
 /**
  * Verify if the given exit is accessible.
  * 
- * @note A exit is accessible if there is, at least, one adjacent empty cell in the vertical or horizontal directions. 
+ * @note An exit is accessible if there is, at least, one adjacent empty cell in the vertical or horizontal directions. 
  * 
  * @param current_exit The exit that will be verified.
+ * @param grid_to_consider An integer, indicating which static_weight to consider.    
+ *                          0 for the normal static_weight, or any other value for the impassable_static_weight.
  * @return bool, where True indicates tha the given exit is accessible, or False otherwise.
 */
-static bool is_exit_accessible(Exit current_exit)
+static bool is_exit_accessible(Exit current_exit, int grid_to_consider)
 {
     if(current_exit == NULL)
         return false;
+
+    Double_Grid static_weight = grid_to_consider ? current_exit->impassable_static_weight : current_exit->static_weight;
 
     for(int exit_cell_index = 0; exit_cell_index < current_exit->width; exit_cell_index++)
     {
@@ -495,7 +734,7 @@ static bool is_exit_accessible(Exit current_exit)
                 if(! is_within_grid_columns(c.col + k))
                     continue;
 
-                if(current_exit->static_weight[c.lin + j][c.col + k] == IMPASSABLE_OBJECT || current_exit->static_weight[c.lin + j][c.col + k] == EXIT_CELL)
+                if(static_weight[c.lin + j][c.col + k] == IMPASSABLE_OBJECT || static_weight[c.lin + j][c.col + k] == EXIT_CELL)
                     continue;
 
                 if(j != 0 && k != 0)
@@ -507,4 +746,39 @@ static bool is_exit_accessible(Exit current_exit)
     }
 
     return false;
+}
+
+/**
+ * Identify the cells occupied by a pedestrian still in the environment and adds Cell structures with its locations and static weights to the given list.
+ * 
+ * @param occupied_cells A pointer to a list of Cell structures, where the Cell structures referring to occupied cells will be appended.
+ * @param current_exit The exit from which the static weight values will be obtained for the occupied cells.
+ * 
+ * @return An integer, indicating the number of occupied cells or -1, in case of a failure.
+*/
+static int identify_occupied_cells(Cell **occupied_cells, Exit current_exit)
+{
+    int num_occupied_cells = 0;
+
+    for(int p_index = 0; p_index < pedestrian_set.num_pedestrians; p_index++)
+    {
+        if(pedestrian_set.list[p_index]->state == GOT_OUT)
+            continue;
+
+        *occupied_cells = realloc(*occupied_cells, sizeof(Cell) * (num_occupied_cells + 1));
+        if(*occupied_cells == NULL)
+        {
+            fprintf(stderr, "Failure during reallocation of the occupied_cells list in identify_occupied_cells.\n");
+            return -1;
+        }
+
+        Location pedestrian_location = pedestrian_set.list[p_index]->current;
+
+        (*occupied_cells)[num_occupied_cells].coordinates = pedestrian_location;
+        (*occupied_cells)[num_occupied_cells].value = current_exit->static_weight[pedestrian_location.lin][pedestrian_location.col];
+
+        num_occupied_cells++;
+    }
+
+    return num_occupied_cells;
 }

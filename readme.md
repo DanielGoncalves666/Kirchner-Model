@@ -29,7 +29,7 @@ The environment files must be placed in the `environment/` directory. Each file 
 |Symbol    | Meaning                   |
 |    ---   |        ---                |
 | \#       | Impassable Obstacles      |
-| m or M   | Passable obstacles |
+| m or M   | Passable obstacles        |
 | p or P   | Pedestrians               |
 | _        | Exits                     |
 | .        | Nothing                   |

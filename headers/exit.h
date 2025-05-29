@@ -8,6 +8,9 @@ struct exit {
     int width; // in contiguous cells
     Location *coordinates; // cells that form up the exit
     Double_Grid static_weight;
+    Double_Grid impassable_static_weight;
+    Double_Grid alizadeh_dynamic_weight;
+    Double_Grid floor_field; // Temporarily holds the Alizadeh field for a given combination of the alizadeh_dynamic_weight with one of the static_weight grids.
 };
 typedef struct exit * Exit;
 
@@ -24,6 +27,7 @@ Function_Status expand_exit(Exit original_exit, Location new_coordinates);
 Function_Status allocate_exits_set_fields();
 Function_Status calculate_kirchner_static_field(Double_Grid target_grid, bool traversable_as_impassable);
 Function_Status calculate_inverted_varas_static_field(Double_Grid target_grid, bool traversable_as_impassable);
+Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid, bool traversable_as_impassable);
 Function_Status calculate_all_static_weights(bool traversable_as_impassable);
 void deallocate_exits();
 

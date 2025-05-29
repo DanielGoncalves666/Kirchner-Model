@@ -29,7 +29,13 @@ enum Environment_Origin {
 
 enum Static_Field_Method {
     KIRCHNER_STATIC_FIELD = 1,
-    INVERTED_VARAS_STATIC_FIELD
+    INVERTED_VARAS_STATIC_FIELD,
+    INVERTED_ALIZADEH_STATIC_FIELD
+};
+
+enum Static_Weight_Grid {
+    NORMAL_STATIC_WEIGHT = 0,
+    IMPASSABLE_STATIC_WEIGHT
 };
 
 typedef enum Function_Status {

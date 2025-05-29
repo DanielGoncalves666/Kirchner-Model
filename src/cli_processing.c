@@ -40,6 +40,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 "The --static-field option specifies the method used to calculate the static floor field. The following choices are available:\n"
 "\t 1 - (default) Kirchner's static floor field.\n"
 "\t 2 -           Inverted Varas's static floor field.\n"
+"\t 3 -           Inverted Alizadeh's static/dynamic floor field.\n"
 "\n"
 "The --dyn-definition option specifies how the dynamic floor field is defined, either as a particle density field or a velocity density field. In the particle density field, pedestrians leave particles in the cell they occupy (before any movement is attempted). In the velocity density field, they leave a particle only in their previous location when they move. The following choices are available:\n"
 "\t 1 - (default) Velocity Density Field.\n"
@@ -394,7 +395,7 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
             break;
         case OPT_STATIC_FIELD:
             enum Static_Field_Method static_field_method = (enum Static_Field_Method)  atoi(arg);
-            if(static_field_method < KIRCHNER_STATIC_FIELD || static_field_method > INVERTED_VARAS_STATIC_FIELD)
+            if(static_field_method < KIRCHNER_STATIC_FIELD || static_field_method > INVERTED_ALIZADEH_STATIC_FIELD)
             {
                 fprintf(stderr, "Invalid static field method.\n");
                 return EIO;
@@ -405,6 +406,8 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
                 case INVERTED_VARAS_STATIC_FIELD:
                     cli_args->calculate_static_field = calculate_inverted_varas_static_field;
                     break;
+                case INVERTED_ALIZADEH_STATIC_FIELD:
+                    cli_args->calculate_static_field = calculate_inverted_alizadeh_static_field;
                 case KIRCHNER_STATIC_FIELD:
                 default:
                     cli_args->calculate_static_field = calculate_kirchner_static_field;

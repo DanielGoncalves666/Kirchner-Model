@@ -42,7 +42,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 "\t 2 -           Inverted Varas's static floor field.\n"
 "\t 3 -           Inverted Alizadeh's static/dynamic floor field.\n"
 "\n"
-"The --dyn-definition option specifies how the dynamic floor field is defined, either as a particle density field or a velocity density field. In the particle density field, pedestrians leave particles in the cell they occupy (before any movement is attempted). In the velocity density field, they leave a particle only in their previous location when they move. The following choices are available:\n"
+"The --dyn-definition option specifies how the dynamic floor field is defined, either as a particle density field or as a velocity density field. In the particle density field, pedestrians leave particles in the cell they occupy (before any movement is attempted). In the velocity density field, they leave a particle only in their previous location when they move. The following choices are available:\n"
 "\t 1 - (default) Velocity Density Field.\n"
 "\t 2 -           Particle Density Field.\n"
 "\n"
@@ -50,7 +50,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 "Alternatively, if only four constants are provided, the program will perform simulations varying the missing constant. In this case, the --min, --max, and --step options define the range and increment step for that constant.\n"
 "Finally, if three or fewer constants are provided, the program will use default values for the remaining constants.\n"
 "\n"
-"Traversable obstacles only work with the adapted Varas static floor field.\n"
+"Traversable obstacles only work with the adapted Varas pr Alizadeh static floor fields.\n"
 "\n"
 "The --ignore-self-trace option is currently implemented for use with a velocity density field. Adapting this functionality for a particle density field has not been made."
 "\n"
@@ -96,7 +96,7 @@ struct argp_option options[] = {
     {"simu", 's', "SIMULATIONS", 0, "Number of simulations for each simulation set (default is 1).",8},
     {"seed", OPT_SEED, "SEED", 0, "Initial seed for the srand function (default is 0). If a negative number is given, the starting seed will be set to the value returned by time()."},
     {"diagonal", OPT_DIAGONAL, "DIAGONAL", 0, "The diagonal value for calculation of the static floor field (default is 1.5)."},
-    {"static-field", OPT_STATIC_FIELD, "STATIC", 0, "The method use to determine the static floor field. Defaults to 1 (Kirchner's method)."},
+    {"static-field", OPT_STATIC_FIELD, "STATIC", 0, "The method used to determine the static floor field. Defaults to 1 (Kirchner's method)."},
     {"traversable-off", OPT_TRAVERSABLE_OFF, 0, 0, "Indicates if traversable objects in the environment should be considered as impassable."},
 
     {"\nVariables and toggle options related to pedestrians (all optional):\n",0,0,OPTION_DOC,0,9},
@@ -109,9 +109,9 @@ struct argp_option options[] = {
     {"density", OPT_PEDESTRIAN_DENSITY, "DENSITY", 0, "The percentage of unoccupied cells in the environment that should be filled by pedestrians. Defaults to 0.3.",12},
     {"alpha", OPT_ALPHA, "ALPHA", 0, "The probability that a particle in the dynamic floor field will undergo diffusion. Value must be between 0 and 1, both inclusive. Defaults to 0.5."},
     {"delta", OPT_DELTA, "DELTA", 0, "The probability that a particle in the dynamic floor field will decay. Value must be between 0 and 1, both inclusive. Defaults to 0.5."},
-    {"ks", OPT_STATIC_COUPLING, "KS", 0, "The static field coupling constant that determines the strength of the static floor field when calculating the transition probabilities for pedestrians. Must be non-negative. Defaults to 0.5. Defaults to 1."},
-    {"kd", OPT_DYNAMIC_COUPLING, "KD", 0, "The dynamic field coupling constant that determines the strength of the dynamic floor field when calculating the transition probabilities for pedestrians. Must be non-negative. Defaults to 0.5. Defaults to 1."},
-    {"dyn-definition", OPT_DYN_FIELD_DEFINITION, "DYN", 0, "Determines how the dynamic floor field is defined, either as a virtual velocity density field or a particle density field."},
+    {"ks", OPT_STATIC_COUPLING, "KS", 0, "The static field coupling constant that determines the strength of the static floor field when calculating the transition probabilities for pedestrians. Must be non-negative. Defaults to 1."},
+    {"kd", OPT_DYNAMIC_COUPLING, "KD", 0, "The dynamic field coupling constant that determines the strength of the dynamic floor field when calculating the transition probabilities for pedestrians. Must be non-negative. Defaults to 1."},
+    {"dyn-definition", OPT_DYN_FIELD_DEFINITION, "DYN", 0, "Determines how the dynamic floor field is defined, either as a virtual velocity density field or as a particle density field."},
     {"ignore-self-trace", OPT_IGNORE_SELF_TRACE, 0, 0, "When calculating transition probabilities for a pedestrian, ignores the most recent particle deposited by that pedestrian."},
     
     {"\nRange values for simulation focused on a constant:\n",0,0,OPTION_DOC,0, 13},

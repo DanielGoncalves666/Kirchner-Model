@@ -112,6 +112,8 @@ Simulation Variables (optional):
                              field. Defaults to 1 (Kirchner's method).
   -s, --simu=SIMULATIONS     Number of simulations for each simulation set
                              (default is 1).
+      --traversable-off      Indicates if traversable objects in the
+                             environment should be considered as impassable.
   
 Variables and toggle options related to pedestrians (all optional):
 
@@ -139,7 +141,7 @@ Kirchner model constants and options:
                              environment that should be filled by pedestrians.
                              Defaults to 0.3.
       --dyn-definition=DYN   Determines how the dynamic floor field is defined,
-                             either as a virtual velocity density field or a
+                             either as a virtual velocity density field or as a
                              particle density field.
       --ignore-self-trace    When calculating transition probabilities for a
                              pedestrian, ignores the most recent particle
@@ -147,13 +149,11 @@ Kirchner model constants and options:
       --kd=KD                The dynamic field coupling constant that
                              determines the strength of the dynamic floor field
                              when calculating the transition probabilities for
-                             pedestrians. Must be non-negative. Defaults to
-                             0.5. Defaults to 1.
+                             pedestrians. Must be non-negative. Defaults to 1.
       --ks=KS                The static field coupling constant that determines
                              the strength of the static floor field when
                              calculating the transition probabilities for
-                             pedestrians. Must be non-negative. Defaults to
-                             0.5. Defaults to 1.
+                             pedestrians. Must be non-negative. Defaults to 1.
   
 Range values for simulation focused on a constant:
 
@@ -212,13 +212,14 @@ The --static-field option specifies the method used to calculate the static
 floor field. The following choices are available:
          1 - (default) Kirchner's static floor field.
          2 -           Inverted Varas's static floor field.
+         3 -           Inverted Alizadeh's static/dynamic floor field.
 
 The --dyn-definition option specifies how the dynamic floor field is defined,
-either as a particle density field or a velocity density field. In the particle
-density field, pedestrians leave particles in the cell they occupy (before any
-movement is attempted). In the velocity density field, they leave a particle
-only in their previous location when they move. The following choices are
-available:
+either as a particle density field or as a velocity density field. In the
+particle density field, pedestrians leave particles in the cell they occupy
+(before any movement is attempted). In the velocity density field, they leave a
+particle only in their previous location when they move. The following choices
+are available:
          1 - (default) Velocity Density Field.
          2 -           Particle Density Field.
 
@@ -230,6 +231,9 @@ simulations varying the missing constant. In this case, the --min, --max, and
 --step options define the range and increment step for that constant.
 Finally, if three or fewer constants are provided, the program will use default
 values for the remaining constants.
+
+Traversable obstacles only work with the adapted Varas pr Alizadeh static floor
+fields.
 
 The --ignore-self-trace option is currently implemented for use with a velocity
 density field. Adapting this functionality for a particle density field has not

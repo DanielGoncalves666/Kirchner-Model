@@ -18,6 +18,7 @@ typedef struct{
     Function_Status (*calculate_static_field)(Double_Grid a, bool b); // Pointer to the function that will be responsible for calculating the static floor field.
     bool write_to_file;
     bool show_debug_information;
+    bool print_static_floor_field;
     bool show_simulation_set_info;
     bool immediate_exit;
     bool prevent_corner_crossing;

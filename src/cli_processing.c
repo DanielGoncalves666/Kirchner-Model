@@ -38,9 +38,11 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 "\t 3 -           Heatmap of the environment cells.\n"
 "\n"
 "The --static-field option specifies the method used to calculate the static floor field. The following choices are available:\n"
-"\t 1 - (default) Kirchner's static floor field.\n"
-"\t 2 -           Inverted Varas's static floor field.\n"
-"\t 3 -           Inverted Alizadeh's static/dynamic floor field.\n"
+"\t 1 - (default) Kirchner's alternative static floor field.\n"
+"\t 2 -           Kirchner's original static floor field.\n"
+"\t 3 -           Kirchner's normalized original static floor field.\n"
+"\t 4 -           Inverted Varas's static floor field.\n"
+"\t 5 -           Inverted Alizadeh's static/dynamic floor field.\n"
 "\n"
 "The --dyn-definition option specifies how the dynamic floor field is defined, either as a particle density field or as a velocity density field. In the particle density field, pedestrians leave particles in the cell they occupy (before any movement is attempted). In the velocity density field, they leave a particle only in their previous location when they move. The following choices are available:\n"
 "\t 1 - (default) Velocity Density Field.\n"
@@ -77,6 +79,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 #define OPT_IGNORE_SELF_TRACE 2004
 #define OPT_STATIC_FIELD 3000
 #define OPT_TRAVERSABLE_OFF 3001
+#define OPT_PRINT_STATIC_FLOOR_FIELD 4001
 
 struct argp_option options[] = {
     {"\nFiles:\n",0,0,OPTION_DOC,0,1},
@@ -96,7 +99,7 @@ struct argp_option options[] = {
     {"simu", 's', "SIMULATIONS", 0, "Number of simulations for each simulation set (default is 1).",8},
     {"seed", OPT_SEED, "SEED", 0, "Initial seed for the srand function (default is 0). If a negative number is given, the starting seed will be set to the value returned by time()."},
     {"diagonal", OPT_DIAGONAL, "DIAGONAL", 0, "The diagonal value for calculation of the static floor field (default is 1.5)."},
-    {"static-field", OPT_STATIC_FIELD, "STATIC", 0, "The method used to determine the static floor field. Defaults to 1 (Kirchner's method)."},
+    {"static-field", OPT_STATIC_FIELD, "STATIC", 0, "The method used to determine the static floor field. Defaults to 1 (Kirchner's alternative method)."},
     {"traversable-off", OPT_TRAVERSABLE_OFF, 0, 0, "Indicates if traversable objects in the environment should be considered as impassable."},
 
     {"\nVariables and toggle options related to pedestrians (all optional):\n",0,0,OPTION_DOC,0,9},
@@ -121,6 +124,7 @@ struct argp_option options[] = {
 
     {"\nToggle Options (optional):\n",0,0,OPTION_DOC,0, 15},
     {"debug", OPT_DEBUG, 0,0 , "Prints debug information to stdout.",16},
+    {"print-sff", OPT_PRINT_STATIC_FLOOR_FIELD, 0,0 , "Prints the static floor field to stdout."},
     {"simulation-set-info", OPT_SIMULATION_SET_INFO, 0, 0, "Prints simulation set information (exits coordinates) to the output file."},
     {"single-exit-flag", OPT_SINGLE_EXIT_FLAG, 0,0, "Prints a flag (#1) before the results for every simulation set that has only one exit."},
 
@@ -138,9 +142,10 @@ Command_Line_Args cli_args = {
     .output_format = OUTPUT_VISUALIZATION,
     .environment_origin = STRUCTURE_DOORS_AND_PEDESTRIANS,
     .simulation_type = SIMULATION_DOOR_LOCATION_ONLY,
-    .calculate_static_field = calculate_kirchner_static_field,
+    .calculate_static_field = calculate_alternative_kirchner_static_field,
     .write_to_file=false,
     .show_debug_information=false,
+    .print_static_floor_field=false,
     .show_simulation_set_info=false,
     .immediate_exit=false,
     .prevent_corner_crossing=false,
@@ -279,6 +284,9 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
         case OPT_DEBUG:
             cli_args->show_debug_information = true;
             break;
+        case OPT_PRINT_STATIC_FLOOR_FIELD:
+            cli_args->print_static_floor_field = true;
+            break;
         case OPT_SIMULATION_SET_INFO:
             cli_args->show_simulation_set_info = true;
             break;
@@ -395,7 +403,7 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
             break;
         case OPT_STATIC_FIELD:
             enum Static_Field_Method static_field_method = (enum Static_Field_Method)  atoi(arg);
-            if(static_field_method < KIRCHNER_STATIC_FIELD || static_field_method > INVERTED_ALIZADEH_STATIC_FIELD)
+            if(static_field_method < KIRCHNER_ALTERNATIVE_STATIC_FIELD || static_field_method > INVERTED_ALIZADEH_STATIC_FIELD)
             {
                 fprintf(stderr, "Invalid static field method.\n");
                 return EIO;
@@ -408,9 +416,16 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
                     break;
                 case INVERTED_ALIZADEH_STATIC_FIELD:
                     cli_args->calculate_static_field = calculate_inverted_alizadeh_static_field;
-                case KIRCHNER_STATIC_FIELD:
+                    break;
+                case KIRCHNER_ORIGINAL_STATIC_FIELD:
+                    cli_args->calculate_static_field = calculate_original_kirchner_static_field;
+                    break;
+                case KIRCHNER_NORMALIZED_ORIGINAL_STATIC_FIELD:
+                    cli_args->calculate_static_field = calculate_normalized_original_kirchner_static_field;
+                    break;
+                case KIRCHNER_ALTERNATIVE_STATIC_FIELD:
                 default:
-                    cli_args->calculate_static_field = calculate_kirchner_static_field;
+                    cli_args->calculate_static_field = calculate_alternative_kirchner_static_field;
             }
 
             break;
@@ -497,6 +512,9 @@ void extract_full_command(char *full_command, int key, char *arg)
     {
         case OPT_DEBUG:
             sprintf(aux, " --debug");
+            break;
+        case OPT_PRINT_STATIC_FLOOR_FIELD:
+            sprintf(aux, " --print-sff");
             break;
         case OPT_SIMULATION_SET_INFO:
             sprintf(aux, " --simulation-set-info");

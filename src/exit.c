@@ -114,7 +114,208 @@ Function_Status allocate_exits_set_fields()
  * 
  * @return Function_Status: FAILURE (0) or SUCCESS (1).
  */
-Function_Status calculate_kirchner_static_field(Double_Grid target_grid, bool traversable_as_impassable)
+Function_Status calculate_original_kirchner_static_field(Double_Grid target_grid, bool traversable_as_impassable)
+{
+    int num_exit_cells = 0; // The total number of exit cells.
+    Location *exit_cell_coordinates = NULL; // A list of all the exit cells coordinates.
+
+    fill_double_grid(target_grid, cli_args.global_line_number, cli_args.global_column_number, -1);
+    copy_grid_structure(target_grid, obstacle_grid); // Copies the structure of the environment
+
+    // Assign a value of -1 to all exit cells. Cells marked with -1 will have their static floor field values calculated next.
+    // Additionally, construct a list containing the coordinates of all exit cells to simplify further processing.
+    for(int exit_index = 0; exit_index < exits_set.num_exits; exit_index++) 
+    {
+        Exit current_exit = exits_set.list[exit_index];
+        for(int cell_index = 0; cell_index < current_exit->width; cell_index++)
+        {
+            Location current_cell = current_exit->coordinates[cell_index];
+            target_grid[current_cell.lin][current_cell.col] = -1;
+
+            exit_cell_coordinates = realloc(exit_cell_coordinates, sizeof(Location) * (num_exit_cells + 1));
+            if(exit_cell_coordinates == NULL)
+            {
+                fprintf(stderr, "Failure in the realloc of the exit_cells_coordinates list.\n");
+                return FAILURE;
+            }
+
+            exit_cell_coordinates[num_exit_cells] = current_cell;
+            num_exit_cells++;
+        }
+    }
+
+    double *max_values = calloc(num_exit_cells, sizeof(double));
+
+    // Calculate the maximum value for all exits
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            if(target_grid[i][j] == IMPASSABLE_OBJECT)
+                continue;
+
+            if(target_grid[i][j] == TRAVERSABLE_OBJECT)
+            {
+                if(traversable_as_impassable)
+                {
+                    target_grid[i][j] = IMPASSABLE_OBJECT; // TRAVERSABLE objects are turned into IMPASSABLE inside de static field
+                    continue;
+                }
+                else
+                    target_grid[i][j] = -1; // The TRAVERSABLE objects are turned into empty cells for the static field.
+            }
+
+            for(int cell_index = 0; cell_index < num_exit_cells; cell_index++)
+            {
+                Location current_exit_cell = exit_cell_coordinates[cell_index]; // The current exit cell being used as the reference.
+                double distance_to_exit = euclidean_distance(current_exit_cell, (Location) {i,j});
+
+                if(distance_to_exit > max_values[cell_index]){
+                    max_values[cell_index] = distance_to_exit;
+                }
+            }
+        }
+    }
+
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            if(target_grid[i][j] == IMPASSABLE_OBJECT)
+                continue; 
+
+            target_grid[i][j] = max_values[0] - euclidean_distance(exit_cell_coordinates[0], (Location) {i,j});
+            for(int cell_index = 1; cell_index < num_exit_cells; cell_index++)
+            {
+                double next_distance = max_values[cell_index] - euclidean_distance(exit_cell_coordinates[cell_index], (Location) {i,j});
+                if(next_distance < target_grid[i][j]){
+                    target_grid[i][j] = next_distance;
+                }
+            }
+            
+        }
+    }
+
+    return SUCCESS;
+}
+
+/**
+ * Calculates the static floor field as described in Annex A of Kirchner's 2002 article, with the addition of a normalization at the end.
+ * The normalization used consists of the subtraction of the Maximum value obtained by the original description of the static field by the value of each cell.
+ * 
+ * @param target_grid The double grid where the calculation will be stored.
+ * @param traversable_as_impassable A boolean, indicating if the traversable obstacles in the environment should be considered as impassable (True) or not (False).
+ * 
+ * @return Function_Status: FAILURE (0) or SUCCESS (1).
+ */
+Function_Status calculate_normalized_original_kirchner_static_field(Double_Grid target_grid, bool traversable_as_impassable)
+{
+    int num_exit_cells = 0; // The total number of exit cells.
+    Location *exit_cell_coordinates = NULL; // A list of all the exit cells coordinates.
+
+    fill_double_grid(target_grid, cli_args.global_line_number, cli_args.global_column_number, -1);
+    copy_grid_structure(target_grid, obstacle_grid); // Copies the structure of the environment
+
+    // Assign a value of -1 to all exit cells. Cells marked with -1 will have their static floor field values calculated next.
+    // Additionally, construct a list containing the coordinates of all exit cells to simplify further processing.
+    for(int exit_index = 0; exit_index < exits_set.num_exits; exit_index++) 
+    {
+        Exit current_exit = exits_set.list[exit_index];
+        for(int cell_index = 0; cell_index < current_exit->width; cell_index++)
+        {
+            Location current_cell = current_exit->coordinates[cell_index];
+            target_grid[current_cell.lin][current_cell.col] = -1;
+
+            exit_cell_coordinates = realloc(exit_cell_coordinates, sizeof(Location) * (num_exit_cells + 1));
+            if(exit_cell_coordinates == NULL)
+            {
+                fprintf(stderr, "Failure in the realloc of the exit_cells_coordinates list.\n");
+                return FAILURE;
+            }
+
+            exit_cell_coordinates[num_exit_cells] = current_cell;
+            num_exit_cells++;
+        }
+    }
+
+    double *max_values = calloc(num_exit_cells, sizeof(double));
+
+    // Calculate the maximum value for all exits 
+    for(int i = 0; i < cli_args.global_line_number; i++) 
+    {
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            if(target_grid[i][j] == IMPASSABLE_OBJECT)
+                continue;
+
+            if(target_grid[i][j] == TRAVERSABLE_OBJECT)
+            {
+                if(traversable_as_impassable)
+                {
+                    target_grid[i][j] = IMPASSABLE_OBJECT; // TRAVERSABLE objects are turned into IMPASSABLE inside de static field
+                    continue;
+                }
+                else
+                    target_grid[i][j] = -1; // The TRAVERSABLE objects are turned into empty cells for the static field.
+            }
+
+            for(int cell_index = 0; cell_index < num_exit_cells; cell_index++)
+            {
+                Location current_exit_cell = exit_cell_coordinates[cell_index]; // The current exit cell being used as the reference.
+                double distance_to_exit = euclidean_distance(current_exit_cell, (Location) {i,j});
+
+                if(distance_to_exit > max_values[cell_index]){
+                    max_values[cell_index] = distance_to_exit;
+                }
+            }
+        }
+    }
+
+    double max_final_value = -1;
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            if(target_grid[i][j] == IMPASSABLE_OBJECT)
+                continue; 
+
+            target_grid[i][j] = max_values[0] - euclidean_distance(exit_cell_coordinates[0], (Location) {i,j});
+            for(int cell_index = 1; cell_index < num_exit_cells; cell_index++)
+            {
+                double next_distance = max_values[cell_index] - euclidean_distance(exit_cell_coordinates[cell_index], (Location) {i,j});
+                if(next_distance < target_grid[i][j]){
+                    target_grid[i][j] = next_distance;
+                }
+            }
+             
+            if(target_grid[i][j] > max_final_value)
+                max_final_value = target_grid[i][j];
+        }
+    }
+
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            if(target_grid[i][j] == IMPASSABLE_OBJECT)
+                continue; 
+
+            target_grid[i][j] = max_final_value - target_grid[i][j];
+        }
+    }
+
+    return SUCCESS;
+}
+
+/**
+ * Calculates the alternative static floor field for the Kirchner Model.
+ * 
+ * @param target_grid The double grid where the calculation will be stored.
+ * @param traversable_as_impassable A boolean, indicating if the traversable obstacles in the environment should be considered as impassable (True) or not (False).
+ * 
+ * @return Function_Status: FAILURE (0) or SUCCESS (1).
+ */
+Function_Status calculate_alternative_kirchner_static_field(Double_Grid target_grid, bool traversable_as_impassable)
 {
     int num_exit_cells = 0; // The total number of exit cells.
     Location *exit_cell_coordinates = NULL; // A list of all the exit cells coordinates.

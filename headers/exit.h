@@ -25,7 +25,9 @@ typedef struct{
 Function_Status add_new_exit(Location exit_coordinates);
 Function_Status expand_exit(Exit original_exit, Location new_coordinates);
 Function_Status allocate_exits_set_fields();
-Function_Status calculate_kirchner_static_field(Double_Grid target_grid, bool traversable_as_impassable);
+Function_Status calculate_original_kirchner_static_field(Double_Grid target_grid, bool traversable_as_impassable);
+Function_Status calculate_normalized_original_kirchner_static_field(Double_Grid target_grid, bool traversable_as_impassable);
+Function_Status calculate_alternative_kirchner_static_field(Double_Grid target_grid, bool traversable_as_impassable);
 Function_Status calculate_inverted_varas_static_field(Double_Grid target_grid, bool traversable_as_impassable);
 Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid, bool traversable_as_impassable);
 Function_Status calculate_all_static_weights(bool traversable_as_impassable);

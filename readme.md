@@ -20,6 +20,12 @@ To compile and run the program, execute the following command in your shell, rep
 ./kirchner.sh [arguments]
 ```
 
+To run a sequence of pre-configured scenarios, extracted from the Kirchner's article, run the following command, replacing `[STATIC_FIELD]` with a value for the --static-field option and `AUXILIARY_FILE` with --auxiliary-file value (the environment used is 63x63 cells, including the external walls).
+
+```bash
+./kirchner_experiments.sh [STATIC_FIELD] [AUXILIARY_FILE]
+```
+
 ## Input and Output Files
 
 ### Environment Files

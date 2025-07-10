@@ -116,7 +116,7 @@ int main(int argc, char **argv)
         if(cli_args.calculate_static_field(exits_set.impassable_static_floor_field, true) == FAILURE) // Static field with traversable objects considered as impassable.
             return FAILURE;  
 
-        if(cli_args.show_debug_information){
+        if(cli_args.show_debug_information || cli_args.print_static_floor_field){
             print_double_grid(exits_set.static_floor_field);
             print_double_grid(exits_set.impassable_static_floor_field);
         }
@@ -239,6 +239,15 @@ static Function_Status run_simulations(FILE *output_file)
             // When the particle moves instead of the creation of particles, it generates results closer to the article.
             if(single_diffusion(true) == FAILURE)
                 return FAILURE;
+
+            if(cli_args.calculate_static_field == calculate_inverted_alizadeh_static_field)
+            {
+                if(cli_args.calculate_static_field(exits_set.static_floor_field, false) == FAILURE) // Main static field
+                    return FAILURE;
+    
+                if(cli_args.calculate_static_field(exits_set.impassable_static_floor_field, true) == FAILURE) // Static field with traversable objects considered as impassable.
+                    return FAILURE;  
+            }
         }
 
         if(origin_uses_static_pedestrians() == true)

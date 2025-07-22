@@ -463,7 +463,7 @@ Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid
 
     if( calculate_all_exits_floor_field(traversable_as_impassable) == FAILURE) // Alizadeh floor field calculation
         return FAILURE;
-
+        
     Double_Grid current_exit = exits_set.list[0]->floor_field;
     copy_double_grid(target_grid, current_exit); // uses the first exit as the base for the merging
     
@@ -474,6 +474,15 @@ Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid
         {
             for(int h = 0; h < cli_args.global_column_number; h++)
             {
+                if(current_exit[i][h] == IMPASSABLE_OBJECT && target_grid[i][h] != IMPASSABLE_OBJECT)
+                    continue;
+
+                if(current_exit[i][h] != IMPASSABLE_OBJECT && target_grid[i][h] == IMPASSABLE_OBJECT)
+                {
+                    target_grid[i][h] = current_exit[i][h];
+                    continue;
+                }
+
                 if(target_grid[i][h] > current_exit[i][h])
                     target_grid[i][h] = current_exit[i][h];
             }
@@ -713,8 +722,6 @@ static Function_Status calculate_dynamic_weight(Exit current_exit, bool traversa
 
             if(num_cells_smaller_value == -1)
                 num_cells_smaller_value = 0; // Not a single cell smaller than the current static_weight_value.
-            
-
 
             dynamic_weight[i][h] = (num_cells_smaller_value + num_cells_equal_value) / (double) current_exit->width;
         }
@@ -864,6 +871,14 @@ static void initialize_dynamic_weight_grid(Exit current_exit, bool traversable_a
             else
                 current_exit->alizadeh_dynamic_weight[i][h] = 0.0;
         }
+    }
+
+    // Add the exit cells to the dynamic weight grid.
+    for(int i = 0; i < current_exit->width; i++)
+    {
+        Location exit_cell = current_exit->coordinates[i];
+
+        current_exit->alizadeh_dynamic_weight[exit_cell.lin][exit_cell.col] = 0.0;
     }
 }
 

@@ -115,7 +115,8 @@ Simulation Variables (optional):
                              0). If a negative number is given, the starting
                              seed will be set to the value returned by time().
       --static-field=STATIC  The method used to determine the static floor
-                             field. Defaults to 1 (Kirchner's method).
+                             field. Defaults to 1 (Kirchner's alternative
+                             method).
   -s, --simu=SIMULATIONS     Number of simulations for each simulation set
                              (default is 1).
       --traversable-off      Indicates if traversable objects in the
@@ -173,6 +174,7 @@ Range values for simulation focused on a constant:
 Toggle Options (optional):
 
       --debug                Prints debug information to stdout.
+      --print-sff            Prints the static floor field to stdout.
       --simulation-set-info  Prints simulation set information (exits
                              coordinates) to the output file.
       --single-exit-flag     Prints a flag (#1) before the results for every
@@ -216,9 +218,11 @@ simulation.
 
 The --static-field option specifies the method used to calculate the static
 floor field. The following choices are available:
-         1 - (default) Kirchner's static floor field.
-         2 -           Inverted Varas's static floor field.
-         3 -           Inverted Alizadeh's static/dynamic floor field.
+         1 - (default) Kirchner's alternative static floor field.
+         2 -           Kirchner's original static floor field.
+         3 -           Kirchner's normalized original static floor field.
+         4 -           Inverted Varas's static floor field.
+         5 -           Inverted Alizadeh's static/dynamic floor field.
 
 The --dyn-definition option specifies how the dynamic floor field is defined,
 either as a particle density field or as a velocity density field. In the

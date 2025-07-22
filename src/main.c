@@ -119,6 +119,9 @@ int main(int argc, char **argv)
         if(cli_args.show_debug_information || cli_args.print_static_floor_field){
             print_double_grid(exits_set.static_floor_field);
             print_double_grid(exits_set.impassable_static_floor_field);
+
+            if(cli_args.calculate_static_field != calculate_inverted_alizadeh_static_field)
+                return 0;
         }
 
         if(cli_args.single_exit_flag == true && exits_set.num_exits == 1 && cli_args.output_format == OUTPUT_TIMESTEPS_COUNT)
@@ -247,6 +250,12 @@ static Function_Status run_simulations(FILE *output_file)
     
                 if(cli_args.calculate_static_field(exits_set.impassable_static_floor_field, true) == FAILURE) // Static field with traversable objects considered as impassable.
                     return FAILURE;  
+
+                if(cli_args.print_static_floor_field){
+                    printf("\n--------------------------------------------------------------\n\n");
+                    print_double_grid(exits_set.static_floor_field);
+                    print_double_grid(exits_set.impassable_static_floor_field);
+                }
             }
         }
 

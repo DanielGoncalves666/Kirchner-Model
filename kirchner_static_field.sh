@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#Used to generate the static floor field for each calculation approach.
+# This script expects three arguments: the auxiliary file, the number of lines and the number of columns in the environment.
 
 # Prints the provided text in the given color.
 # $1 Sequence code of the chosen color.
@@ -17,7 +17,8 @@ auxiliary=$1
 dir_name="static_field-"$auxiliary
 mkdir -p output/$dir_name
 
-for static_field in 1 2  4 5; do
+for static_field in 1 2 3; do
     print_in_color "\033[0;34m" "Kirchner static-field "$static_field
-    ./kirchner.sh -o$dir_name/kirchner-$static_field.txt -a$auxiliary -m5 -l63 -c63 -O2 -s1 --density=0.3 --delta=0.3 --alpha=0.1 --kd=0 --ks=1 --static-field=$static_field --debug >> output/$dir_name/debug$static_field-$auxiliary.txt
+    ./kirchner.sh -oerase.txt -a$auxiliary -m5 -l$2 -c$3 -O2 -s1 --static-field=$static_field --print-sff >> output/$dir_name/${auxiliary}_static_field_$static_field.txt
+    rm -r output/erase.txt # The simulation data doesn't matter
 done

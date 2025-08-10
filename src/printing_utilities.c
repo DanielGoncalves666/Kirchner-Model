@@ -74,19 +74,19 @@ void print_pedestrian_position_grid(FILE *output_stream, int simulation_number, 
 			for(int j = 0; j < cli_args.global_column_number; j++)
 			{
 				if(pedestrian_position_grid[i][j] != 0)
-					fprintf(output_stream,"👤");
+					fprintf(output_stream,"🟦");
 				else if(exits_only_grid[i][j] == EXIT_CELL)
-					fprintf(output_stream,"🚪");
+					fprintf(output_stream,"🟩");
 				else if(exits_set.static_floor_field[i][j] == IMPASSABLE_OBJECT)
-					fprintf(output_stream,"🧱");
+					fprintf(output_stream,"🟧");
 				// else if(obstacle_grid[i][j] == TRAVERSABLE_OBJECT && obstacle_traversability_grid[i][j] == EASY_OBSC_TRAVERSABILITY)
-				// 	fprintf(output_stream,"🪑");
+				// 	fprintf(output_stream,"📋");
 				else if(obstacle_grid[i][j] == TRAVERSABLE_OBJECT && obstacle_traversability_grid[i][j] == MEDIUM_OBSC_TRAVERSABILITY)
-					fprintf(output_stream,"📋");
+					fprintf(output_stream,"⏹️");
 				// else if(obstacle_grid[i][j] == TRAVERSABLE_OBJECT && obstacle_traversability_grid[i][j] == HARD_OBSC_TRAVERSABILITY)
 				// 	fprintf(output_stream,"🗄️");
 				else if(pedestrian_position_grid[i][j] == 0)
-					fprintf(output_stream,"⬛");
+					fprintf(output_stream,"⬜");
 			}
 			fprintf(output_stream,"\n");
 		}

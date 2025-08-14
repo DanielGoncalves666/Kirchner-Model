@@ -489,6 +489,11 @@ Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid
         }
     }
 
+    if(cli_args.print_static_floor_field){
+        printf("Original Alizadeh Static Floor Field (before inversion):\n");
+        print_double_grid(target_grid);
+    }
+
     invert_grid(target_grid);
 
     return SUCCESS;
@@ -911,9 +916,8 @@ static void invert_grid(Double_Grid target_grid){
             if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == TRAVERSABLE_OBJECT)
                 continue; 
 
-            // MAX_VALUE - CELL_VALUE + 1
-            // The +1 is needed because of the exits starting value.
-            double inverted_static_field_value = max_value - target_grid[i][j] + 1;
+            // MAX_VALUE - CELL_VALUE
+            double inverted_static_field_value = max_value - target_grid[i][j];
             target_grid[i][j] = inverted_static_field_value;
         }
     }

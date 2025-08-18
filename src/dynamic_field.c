@@ -26,6 +26,9 @@ Int_Grid aux_dynamic_grid = NULL; // Grid used to help in the diffusion process.
 void increase_particle_at(Location coordinates)
 {
     exits_set.dynamic_floor_field[coordinates.lin][coordinates.col] += 1;
+    if(cli_args.skip_new_particles_decay){
+        exits_set.dynamic_floor_field[coordinates.lin][coordinates.col] *= -1;
+    }
 }
 
 /**
@@ -42,6 +45,11 @@ void decay()
         for(int j = 0; j < cli_args.global_column_number; j++)
         {
             int num_of_particles = exits_set.dynamic_floor_field[i][j];
+            if(cli_args.skip_new_particles_decay && num_of_particles < 0){ // Recently created particles don't decay.
+                exits_set.dynamic_floor_field[i][j] *= -1;
+                num_of_particles = exits_set.dynamic_floor_field[i][j] - 1;
+            }
+
             for(int particle = 0; particle < num_of_particles; particle++)
             {
                 if(probability_test(cli_args.delta))

@@ -77,6 +77,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 #define OPT_STEP_VALUE 2002
 #define OPT_DYN_FIELD_DEFINITION 2003
 #define OPT_IGNORE_SELF_TRACE 2004
+#define OPT_SKIP_NEW_PARTICLES_DECAY 2005
 #define OPT_STATIC_FIELD 3000
 #define OPT_TRAVERSABLE_OFF 3001
 #define OPT_PRINT_STATIC_FLOOR_FIELD 4001
@@ -116,6 +117,7 @@ struct argp_option options[] = {
     {"kd", OPT_DYNAMIC_COUPLING, "KD", 0, "The dynamic field coupling constant that determines the strength of the dynamic floor field when calculating the transition probabilities for pedestrians. Must be non-negative. Defaults to 1."},
     {"dyn-definition", OPT_DYN_FIELD_DEFINITION, "DYN", 0, "Determines how the dynamic floor field is defined, either as a virtual velocity density field or as a particle density field."},
     {"ignore-self-trace", OPT_IGNORE_SELF_TRACE, 0, 0, "When calculating transition probabilities for a pedestrian, ignores the most recent particle deposited by that pedestrian."},
+    {"skip-new-particles-decay", OPT_SKIP_NEW_PARTICLES_DECAY, 0, 0, "Don't apply decay for newly created dynamic particles."},
     
     {"\nRange values for simulation focused on a constant:\n",0,0,OPTION_DOC,0, 13},
     {"min", OPT_MIN_SIMULATION_VALUE, "MIN", 0, "The minimum value that the variable constant will assume. Defaults to 0.", 14},
@@ -154,6 +156,7 @@ Command_Line_Args cli_args = {
     .use_density = true,
     .velocity_density_field = true,
     .ignore_latest_self_trace = false,
+    .skip_new_particles_decay = false,
     .traversable_as_impassable = false,
     .global_line_number = 0,
     .global_column_number = 0,
@@ -401,6 +404,9 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
         case OPT_IGNORE_SELF_TRACE:
             cli_args->ignore_latest_self_trace = true;
             break;
+        case OPT_SKIP_NEW_PARTICLES_DECAY:
+            cli_args->skip_new_particles_decay = true;
+            break;
         case OPT_STATIC_FIELD:
             enum Static_Field_Method static_field_method = (enum Static_Field_Method)  atoi(arg);
             if(static_field_method < KIRCHNER_ALTERNATIVE_STATIC_FIELD || static_field_method > INVERTED_ALIZADEH_STATIC_FIELD)
@@ -534,6 +540,9 @@ void extract_full_command(char *full_command, int key, char *arg)
         case OPT_IGNORE_SELF_TRACE:
             sprintf(aux, " --ignore-self-trace");
             break;
+        case OPT_SKIP_NEW_PARTICLES_DECAY:
+            sprintf(aux, " --skip-new-particles-decay");
+            break;  
         case OPT_SEED:
             sprintf(aux, " --seed=%s", arg);
             break;

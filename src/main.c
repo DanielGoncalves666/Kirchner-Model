@@ -121,7 +121,7 @@ int main(int argc, char **argv)
             print_double_grid(exits_set.impassable_static_floor_field);
 
             if(cli_args.calculate_static_field != calculate_inverted_alizadeh_static_field)
-                return 0;
+                return END_PROGRAM;
         }
 
         if(cli_args.single_exit_flag == true && exits_set.num_exits == 1 && cli_args.output_format == OUTPUT_TIMESTEPS_COUNT)

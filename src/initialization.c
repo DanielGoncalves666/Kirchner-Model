@@ -154,7 +154,10 @@ Function_Status load_environment()
         return FAILURE;    
 
     char read_char = '\0';
-    int returned_value = fscanf(environment_file,"%c",&read_char);// responsible for eliminating the '\n' after the environment dimensions.
+    do{
+        fscanf(environment_file, "%c", &read_char);
+    }while(read_char != '\n'); // Read all spaces and the line break after the environment dimensions
+
     for(int i = 0; i < cli_args.global_line_number; i++)
     {
         int h = 0;

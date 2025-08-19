@@ -401,7 +401,9 @@ void test_obstacle_crossing()
 
         // Test failed. The pedestrian will remain at the same cell.
         current_pedestrian->state = STOPPED;
-        current_pedestrian->traversable_cooldown = 6; // A cooldown of 6 timesteps is set (At the end of the current timestep it will be down to 5).
+
+        if(cli_args.traversable_cooldown != 0)
+            current_pedestrian->traversable_cooldown = cli_args.traversable_cooldown + 1; // A cooldown of N + 1timesteps is set (At the end of the current timestep it will be down to N).
 
         if(cli_args.show_debug_information)
                 printf("Ped %d - Movement to an traversable obstacle at %d %d failed.\n", current_pedestrian->id, target.lin, target.col);

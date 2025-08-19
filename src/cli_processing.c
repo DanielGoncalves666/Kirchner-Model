@@ -80,6 +80,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 #define OPT_SKIP_NEW_PARTICLES_DECAY 2005
 #define OPT_STATIC_FIELD 3000
 #define OPT_TRAVERSABLE_OFF 3001
+#define OPT_COOLDOWN 3002
 #define OPT_PRINT_STATIC_FLOOR_FIELD 4001
 
 struct argp_option options[] = {
@@ -102,6 +103,7 @@ struct argp_option options[] = {
     {"diagonal", OPT_DIAGONAL, "DIAGONAL", 0, "The diagonal value for calculation of the static floor field (default is 1.5)."},
     {"static-field", OPT_STATIC_FIELD, "STATIC", 0, "The method used to determine the static floor field. Defaults to 1 (Kirchner's alternative method)."},
     {"traversable-off", OPT_TRAVERSABLE_OFF, 0, 0, "Indicates if traversable objects in the environment should be considered as impassable."},
+    {"cooldown", OPT_COOLDOWN, "COOLDOWN", 0, "Indicates the number of timesteps that a pedestrian will be prohibited from trying to move to a traversable obstacle. Defaults to 5."},
 
     {"\nVariables and toggle options related to pedestrians (all optional):\n",0,0,OPTION_DOC,0,9},
     {"ped", 'p', "PEDESTRIANS", 0, "Manually set the number of pedestrians to be randomly placed in the environment. If provided takes precedence over --density.",10},
@@ -158,6 +160,7 @@ Command_Line_Args cli_args = {
     .ignore_latest_self_trace = false,
     .skip_new_particles_decay = false,
     .traversable_as_impassable = false,
+    .traversable_cooldown = 5,
     .global_line_number = 0,
     .global_column_number = 0,
     .num_simulations = 1, // A single simulation by default.
@@ -438,6 +441,9 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
         case OPT_TRAVERSABLE_OFF:
             cli_args->traversable_as_impassable = true;
             break;
+        case OPT_COOLDOWN:
+            cli_args->traversable_cooldown = true;
+            break;
         case ARGP_KEY_ARG:
             fprintf(stderr, "No positional argument was expect, but %s was given.\n", arg);
             return EINVAL;
@@ -581,6 +587,9 @@ void extract_full_command(char *full_command, int key, char *arg)
             break;
         case OPT_TRAVERSABLE_OFF:
             sprintf(aux, " --traversable-off");
+            break;
+        case OPT_COOLDOWN:
+            sprintf(aux, " --cooldown=%s", arg);
             break;
         case 'o':
         case 'O':

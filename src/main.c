@@ -20,7 +20,7 @@
 #include"../headers/shared_resources.h"
 #include"../headers/dynamic_field.h"
 
-static Function_Status run_simulations(FILE *output_file);
+static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_output_file);
 static Function_Status conflict_solving();
 static void deallocate_program_structures(FILE *output_file, FILE *auxiliary_file);
 
@@ -30,6 +30,7 @@ int main(int argc, char **argv)
 {
     FILE *auxiliary_file = NULL;
     FILE *output_file = NULL;
+    FILE *dynamic_floor_field_file = NULL;
     int simulation_set_quantity = 1; // Origins that use static exits have a single simulation set.
     int simulation_set_index = 0;
     int current_exit_number = 0;
@@ -39,11 +40,21 @@ int main(int argc, char **argv)
 
     if(open_auxiliary_file(&auxiliary_file) == FAILURE)
         return END_PROGRAM;
+
+    if(open_dynamic_field_output_file(&dynamic_floor_field_file) == FAILURE){
+        if(auxiliary_file != NULL)
+            fclose(auxiliary_file);
+        return END_PROGRAM;
+    }
     
     if(open_output_file( &output_file) == FAILURE)
     {
+        if(dynamic_floor_field_file != NULL && dynamic_floor_field_file != stdout)
+            fclose(dynamic_floor_field_file);
+
         if(auxiliary_file != NULL)
             fclose(auxiliary_file);
+
         return END_PROGRAM;
     }
     print_full_command(output_file);
@@ -131,7 +142,7 @@ int main(int argc, char **argv)
         double *varying_constant = obtain_varying_constant(); // The pointer to the "constant" of the Kirchner model that will vary.
         if(varying_constant == NULL)
         {
-            if(run_simulations(output_file) == FAILURE)
+            if(run_simulations(output_file, dynamic_floor_field_file) == FAILURE)
                 return END_PROGRAM;
         }
         else
@@ -140,7 +151,7 @@ int main(int argc, char **argv)
             {
                 fprintf(output_file, "*%.3f ", *varying_constant);
 
-                if(run_simulations(output_file) == FAILURE) // The simulations actually happen here.
+                if(run_simulations(output_file, dynamic_floor_field_file) == FAILURE) // The simulations actually happen here.
                     return END_PROGRAM;
 
                 if(cli_args.output_format == OUTPUT_TIMESTEPS_COUNT)
@@ -178,9 +189,10 @@ int main(int argc, char **argv)
  * Runs all the simulations for a specific simulation set, printing generated data if appropriate.
  * 
  * @param output_file Stream where the output data will be written.
+ * @param dynamic_field_output_file Stream where the dynamic floor field will be written.
  * @return Function_Status: FAILURE (0) or SUCCESS (1).
 */
-static Function_Status run_simulations(FILE *output_file)
+static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_output_file)
 {
     for(int simu_index = 0; simu_index < cli_args.num_simulations; simu_index++, cli_args.seed++)
     {
@@ -207,11 +219,13 @@ static Function_Status run_simulations(FILE *output_file)
             if(cli_args.show_debug_information)
             {
                 printf("\nTimestep %d.\n", number_timesteps + 1);
-                print_int_grid(pedestrian_position_grid);
+                print_int_grid(stdout, pedestrian_position_grid);
             }
 
-            if(cli_args.show_debug_information)
-                print_int_grid(exits_set.dynamic_floor_field);
+            if(cli_args.print_dynamic_floor_field){
+                fprintf(dynamic_field_output_file, "Timestep = %d\n", number_timesteps);
+                print_int_grid(dynamic_field_output_file, exits_set.dynamic_floor_field);
+            }
 
             evaluate_pedestrians_movements();
             

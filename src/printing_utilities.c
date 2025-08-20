@@ -97,19 +97,20 @@ void print_pedestrian_position_grid(FILE *output_stream, int simulation_number, 
 }
 
 /**
- * Print the integer grid to stdout.
+ * Print the integer grid to the given stream
  * 
+ * @param output_stream Stream where the data will be written.
  * @param int_grid Integer grid to be printed.
 */
-void print_int_grid(Int_Grid int_grid)
+void print_int_grid(FILE *output_stream, Int_Grid int_grid)
 {
 	for(int i = 0; i < cli_args.global_line_number; i++){
 		for(int h = 0; h < cli_args.global_column_number; h++){
-			printf("%3d ", int_grid[i][h]);
+			fprintf(output_stream, "%3d ", int_grid[i][h]);
 		}
-		printf("\n\n");
+		fprintf(output_stream, "\n\n");
 	}
-	printf("\n");
+	fprintf(output_stream, "\n");
 }
 
 /**

@@ -82,6 +82,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 #define OPT_TRAVERSABLE_OFF 3001
 #define OPT_COOLDOWN 3002
 #define OPT_PRINT_STATIC_FLOOR_FIELD 4001
+#define OPT_PRINT_DYNAMIC_FLOOR_FIELD 4002
 
 struct argp_option options[] = {
     {"\nFiles:\n",0,0,OPTION_DOC,0,1},
@@ -129,6 +130,7 @@ struct argp_option options[] = {
     {"\nToggle Options (optional):\n",0,0,OPTION_DOC,0, 15},
     {"debug", OPT_DEBUG, 0,0 , "Prints debug information to stdout.",16},
     {"print-sff", OPT_PRINT_STATIC_FLOOR_FIELD, 0,0 , "Prints the static floor field to stdout."},
+    {"print-dff", OPT_PRINT_DYNAMIC_FLOOR_FIELD, "DYN_FILE", 0, "Prints the dynamic floor field to stdout (default). If the name of a file is provided, the data is stored in it."},
     {"simulation-set-info", OPT_SIMULATION_SET_INFO, 0, 0, "Prints simulation set information (exits coordinates) to the output file."},
     {"single-exit-flag", OPT_SINGLE_EXIT_FLAG, 0,0, "Prints a flag (#1) before the results for every simulation set that has only one exit."},
 
@@ -143,6 +145,7 @@ Command_Line_Args cli_args = {
     .environment_filename="varas_queue.txt",
     .output_filename="",
     .auxiliary_filename="",
+    .dynamic_floor_field_filename="",
     .output_format = OUTPUT_VISUALIZATION,
     .environment_origin = STRUCTURE_DOORS_AND_PEDESTRIANS,
     .simulation_type = SIMULATION_DOOR_LOCATION_ONLY,
@@ -150,6 +153,7 @@ Command_Line_Args cli_args = {
     .write_to_file=false,
     .show_debug_information=false,
     .print_static_floor_field=false,
+    .print_dynamic_floor_field=false,
     .show_simulation_set_info=false,
     .immediate_exit=false,
     .prevent_corner_crossing=false,
@@ -292,6 +296,12 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
             break;
         case OPT_PRINT_STATIC_FLOOR_FIELD:
             cli_args->print_static_floor_field = true;
+            break;
+        case OPT_PRINT_DYNAMIC_FLOOR_FIELD:
+            if(arg != NULL)
+                strcpy(cli_args->dynamic_floor_field_filename, arg);
+
+            cli_args->print_dynamic_floor_field = true;
             break;
         case OPT_SIMULATION_SET_INFO:
             cli_args->show_simulation_set_info = true;
@@ -527,6 +537,12 @@ void extract_full_command(char *full_command, int key, char *arg)
             break;
         case OPT_PRINT_STATIC_FLOOR_FIELD:
             sprintf(aux, " --print-sff");
+            break;
+        case OPT_PRINT_DYNAMIC_FLOOR_FIELD:
+            if(arg == NULL)
+                sprintf(aux, " --print-dff");
+            else
+                sprintf(aux, " --print-dff=%s", arg);
             break;
         case OPT_SIMULATION_SET_INFO:
             sprintf(aux, " --simulation-set-info");

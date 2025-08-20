@@ -22,3 +22,10 @@ for static_field in 1 2 3; do
     ./kirchner.sh -oerase.txt -a$auxiliary -m5 -l$2 -c$3 -O2 -s1 --static-field=$static_field --print-sff >> output/$dir_name/${auxiliary}_static_field_$static_field.txt
     rm -r output/erase.txt # The simulation data doesn't matter
 done
+
+for static_field in 1 2; do
+    print_in_color "\033[0;34m" "Kirchner static-field "$static_field
+    ./kirchner.sh -oerase.txt -a$auxiliary -m5 -l$2 -c$3 -O2 -s1 --alpha=0.3 --delta=0.2 --ignore-self-trace --skip-new-particles-decay --static-field=$static_field --print-dff="output/$dir_name/dynamic_output_$static_field.txt"
+    rm -r output/erase.txt # The simulation data doesn't matter
+done
+

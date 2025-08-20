@@ -5,6 +5,7 @@
 
 Function_Status open_auxiliary_file(FILE **auxiliary_file);
 Function_Status open_output_file(FILE **output_file);
+Function_Status open_dynamic_field_output_file(FILE **dynamic_floor_field_file);
 Function_Status allocate_grids();
 Function_Status load_environment();
 Function_Status generate_environment();

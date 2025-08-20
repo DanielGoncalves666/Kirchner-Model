@@ -12,6 +12,7 @@ typedef struct{
     char environment_filename[150];
     char output_filename[150];
     char auxiliary_filename[150];
+    char dynamic_floor_field_filename[150];
     enum Output_Format output_format;
     enum Environment_Origin environment_origin;
     enum Simulation_Type simulation_type;
@@ -19,6 +20,7 @@ typedef struct{
     bool write_to_file;
     bool show_debug_information;
     bool print_static_floor_field;
+    bool print_dynamic_floor_field;
     bool show_simulation_set_info;
     bool immediate_exit;
     bool prevent_corner_crossing;

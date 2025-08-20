@@ -104,6 +104,28 @@ Function_Status open_output_file(FILE **output_file)
 }
 
 /**
+ * Opens the dynamic floor field output file in write mode.  
+ * 
+ * @param dynamic_floor_field_file Pointer to the FILE structure that will hold the file descriptor.
+ * @return Function_Status: FAILURE (0) or SUCCESS (1).
+*/
+Function_Status open_dynamic_field_output_file(FILE **dynamic_floor_field_file)
+{       
+    if(cli_args.print_dynamic_floor_field){
+        *dynamic_floor_field_file = fopen(cli_args.dynamic_floor_field_filename, "w");
+        if(dynamic_floor_field_file == NULL){
+            fprintf(stderr, "It was not possible to open the dynamic floor field output file.\n");
+            return FAILURE;
+        }
+    }
+    else{
+        *dynamic_floor_field_file = stdout;
+    }
+
+    return SUCCESS;
+}
+
+/**
  * Allocates the integer grids necessary for the program (environment, exits, pedestrian and heatmap grids).
  *  
  * @return Function_Status: FAILURE (0) or SUCCESS (1).

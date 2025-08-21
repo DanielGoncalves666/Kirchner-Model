@@ -592,24 +592,20 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
     {
         for(int j = 0; j < 3; j++)
         {
-            if(i == 1 || j == 1) // Ignore the diagonals, since they are all 0.
+            if(i == 1 || j == 1 || cli_args.allow_diagonal_movements)
             {
                 if(! is_within_grid_lines(lin + (i - 1)) || 
                    ! is_within_grid_columns(col + (j - 1)))
                     continue;
 
-                // Ignores when is the pedestrian's cell.
-                if(! (i == 1 && j == 1))
-                {
-                    if(pedestrian_position_grid[lin + i - 1][col + j - 1] > 0 )
-                        continue;
-                } 
+                if(pedestrian_position_grid[lin + i - 1][col + j - 1] > 0 && !IS_PEDESTRIAN_CELL(i,j))
+                    continue;
 
                 if(exits_only_grid[lin + i - 1][col + j - 1] != EXIT_CELL){
                     if(static_field[lin + i - 1][col + j - 1] == IMPASSABLE_OBJECT)
                         continue;// Using static_field instead of obstacle_grid allows to check for the traversable obstacles when the pedestrian is not allowed to go over them.
 
-                    if((i == 1 && j == 1) && is_traversable_obstacle(current_pedestrian->current))
+                    if(IS_PEDESTRIAN_CELL(i,j) && is_traversable_obstacle(current_pedestrian->current))
                         non_exponential_value[i][j] = 1;// If the pedestrian is in a cell with a traversable obstacle, the traversability value is considered to be the same as an empty cell.
                     else
                         non_exponential_value[i][j] = obstacle_traversability_grid[lin + i - 1][col + j - 1];

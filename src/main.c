@@ -131,7 +131,7 @@ int main(int argc, char **argv)
             print_double_grid(exits_set.static_floor_field);
             print_double_grid(exits_set.impassable_static_floor_field);
 
-            if(cli_args.calculate_static_field != calculate_inverted_alizadeh_static_field)
+            if(cli_args.print_static_floor_field && cli_args.calculate_static_field != calculate_inverted_alizadeh_static_field)
                 return END_PROGRAM;
         }
 

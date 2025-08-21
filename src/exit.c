@@ -409,12 +409,12 @@ Function_Status calculate_inverted_varas_static_field(Double_Grid target_grid, b
         return FAILURE;
     }
 
-    Double_Grid current_exit = exits_set.list[0]->static_weight;
+    Double_Grid current_exit = traversable_as_impassable ? exits_set.list[0]->impassable_static_weight : exits_set.list[0]->static_weight;
     copy_double_grid(target_grid, current_exit); // uses the first exit as the base for the merging
     
     for(int exit_index = 1; exit_index < exits_set.num_exits; exit_index++)
     {
-        current_exit = exits_set.list[exit_index]->static_weight;
+        current_exit = traversable_as_impassable ? exits_set.list[exit_index]->impassable_static_weight : exits_set.list[exit_index]->static_weight;
         for(int i = 0; i < cli_args.global_line_number; i++)
         {
             for(int j = 0; j < cli_args.global_column_number; j++)
@@ -464,12 +464,12 @@ Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid
     if( calculate_all_exits_floor_field(traversable_as_impassable) == FAILURE) // Alizadeh floor field calculation
         return FAILURE;
         
-    Double_Grid current_exit = exits_set.list[0]->floor_field;
+    Double_Grid current_exit = traversable_as_impassable ? exits_set.list[0]->impassable_static_weight : exits_set.list[0]->static_weight;
     copy_double_grid(target_grid, current_exit); // uses the first exit as the base for the merging
     
     for(int exit_index = 1; exit_index < exits_set.num_exits; exit_index++)
     {
-        current_exit = exits_set.list[exit_index]->floor_field;
+        current_exit = traversable_as_impassable ? exits_set.list[exit_index]->impassable_static_weight : exits_set.list[exit_index]->static_weight;
         for(int i = 0; i < cli_args.global_line_number; i++)
         {
             for(int h = 0; h < cli_args.global_column_number; h++)
@@ -916,8 +916,9 @@ static void invert_grid(Double_Grid target_grid){
             if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == TRAVERSABLE_OBJECT)
                 continue; 
 
-            // MAX_VALUE - CELL_VALUE
-            double inverted_static_field_value = max_value - target_grid[i][j];
+            // MAX_VALUE - CELL_VALUE + 1
+            // The +1 is needed because of the exits starting value.
+            double inverted_static_field_value = max_value - target_grid[i][j] + 1;
             target_grid[i][j] = inverted_static_field_value;
         }
     }

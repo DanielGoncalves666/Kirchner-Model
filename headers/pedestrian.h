@@ -3,6 +3,8 @@
 
 #include"shared_resources.h"
 
+#define IS_PEDESTRIAN_CELL(i,j) ((i) == 1 && (j) == 1)
+
 typedef struct cell_conflict * Cell_Conflict;
 
 enum Pedestrian_State {LEAVING, GOT_OUT, STOPPED, MOVING};

@@ -598,6 +598,11 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
                    ! is_within_grid_columns(col + (j - 1)))
                     continue;
 
+                if(IS_DIAGONAL_CELL(i,j) && is_diagonal_valid(current_pedestrian->current,(Location){i - 1,j - 1}, exits_set.impassable_static_floor_field) == false)
+                {
+                    continue; // It's impossible to reach the cell (even if both obstacles are traversable)
+                }    
+
                 if(pedestrian_position_grid[lin + i - 1][col + j - 1] > 0 && !IS_PEDESTRIAN_CELL(i,j))
                     continue;
 

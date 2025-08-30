@@ -40,7 +40,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 "The --static-field option specifies the method used to calculate the static floor field. The following choices are available:\n"
 "\t 1 - (default) Kirchner's alternative static floor field.\n"
 "\t 2 -           Kirchner's original static floor field.\n"
-"\t 3 -           Kirchner's normalized original static floor field.\n"
+"\t 3 -           Kirchner's (simple) normalized original static floor field.\n"
 "\t 4 -           Inverted Varas's static floor field.\n"
 "\t 5 -           Inverted Alizadeh's static/dynamic floor field.\n"
 "\n"
@@ -72,6 +72,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 #define OPT_DELTA 1011
 #define OPT_STATIC_COUPLING 1012
 #define OPT_DYNAMIC_COUPLING 1013
+#define OPT_ALIZADEH_ALPHA 1014
 #define OPT_MIN_SIMULATION_VALUE 2000
 #define OPT_MAX_SIMULATION_VALUE 2001
 #define OPT_STEP_VALUE 2002
@@ -103,6 +104,7 @@ struct argp_option options[] = {
     {"simu", 's', "SIMULATIONS", 0, "Number of simulations for each simulation set (default is 1).",8},
     {"seed", OPT_SEED, "SEED", 0, "Initial seed for the srand function (default is 0). If a negative number is given, the starting seed will be set to the value returned by time()."},
     {"diagonal", OPT_DIAGONAL, "DIAGONAL", 0, "The diagonal value for calculation of the static floor field (default is 1.5)."},
+    {"alizadeh-alpha", OPT_ALIZADEH_ALPHA, "ALI-ALPHA", 0, "Alizadeh Coefficient of crowd avoidance. Defaults to 1."},
     {"static-field", OPT_STATIC_FIELD, "STATIC", 0, "The method used to determine the static floor field. Defaults to 1 (Kirchner's alternative method)."},
     {"traversable-off", OPT_TRAVERSABLE_OFF, 0, 0, "Indicates if traversable objects in the environment should be considered as impassable."},
     {"cooldown", OPT_COOLDOWN, "COOLDOWN", 0, "Indicates the number of timesteps that a pedestrian will be prohibited from trying to move to a traversable obstacle. Defaults to 5."},
@@ -174,6 +176,7 @@ Command_Line_Args cli_args = {
     .total_num_pedestrians = 0,
     .seed = 0,
     .diagonal = 1.5,
+    .alizadeh_alpha = 1.0,
     .alpha=0.5,
     .delta=0.5,
     .ks=1,
@@ -287,6 +290,9 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
                 fprintf(stderr, "The diagonal value must be non-negative.\n");
                 return EIO;
             }
+            break;
+        case OPT_ALIZADEH_ALPHA:
+            cli_args->alizadeh_alpha = atof(arg);
             break;
         case OPT_SEED:
             cli_args->seed = atoi(arg);
@@ -579,6 +585,9 @@ void extract_full_command(char *full_command, int key, char *arg)
             break;
         case OPT_DIAGONAL:
             sprintf(aux, " --diagonal=%s", arg);
+            break;
+        case OPT_ALIZADEH_ALPHA:
+            sprintf(aux, " --alizadeh-alpha=%s", arg);
             break;
         case OPT_PEDESTRIAN_DENSITY:
             sprintf(aux, " --density=%s", arg);

@@ -464,12 +464,12 @@ Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid
     if( calculate_all_exits_floor_field(traversable_as_impassable) == FAILURE) // Alizadeh floor field calculation
         return FAILURE;
         
-    Double_Grid current_exit = traversable_as_impassable ? exits_set.list[0]->impassable_static_weight : exits_set.list[0]->static_weight;
+    Double_Grid current_exit = exits_set.list[0]->floor_field;
     copy_double_grid(target_grid, current_exit); // uses the first exit as the base for the merging
     
     for(int exit_index = 1; exit_index < exits_set.num_exits; exit_index++)
     {
-        current_exit = traversable_as_impassable ? exits_set.list[exit_index]->impassable_static_weight : exits_set.list[exit_index]->static_weight;
+        current_exit = exits_set.list[exit_index]->floor_field;;
         for(int i = 0; i < cli_args.global_line_number; i++)
         {
             for(int h = 0; h < cli_args.global_column_number; h++)
@@ -489,10 +489,10 @@ Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid
         }
     }
 
-    if(cli_args.print_static_floor_field){
-        printf("Original Alizadeh Static Floor Field (before inversion):\n");
-        print_double_grid(target_grid);
-    }
+    //if(cli_args.print_static_floor_field){
+    //    printf("Original Alizadeh Static Floor Field (before inversion):\n");
+    //    print_double_grid(target_grid);
+    //}
 
     invert_grid(target_grid);
 
@@ -763,7 +763,7 @@ static Function_Status calculate_exit_floor_field(Exit current_exit, bool traver
             if(current_exit->alizadeh_dynamic_weight[i][h] == -1) // Cells with no dynamic weight (obstacles and walls).
                 current_exit->floor_field[i][h] = static_weight[i][h];
             else
-                current_exit->floor_field[i][h] = static_weight[i][h] + cli_args.alpha * current_exit->alizadeh_dynamic_weight[i][h];
+                current_exit->floor_field[i][h] = static_weight[i][h] + cli_args.alizadeh_alpha * current_exit->alizadeh_dynamic_weight[i][h];
         }
     }
 

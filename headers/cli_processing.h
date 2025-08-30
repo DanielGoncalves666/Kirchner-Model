@@ -39,6 +39,7 @@ typedef struct{
     int total_num_pedestrians;
     int seed;
     double diagonal;
+    double alizadeh_alpha;
     double alpha;
     double delta;
     double ks;

@@ -209,7 +209,23 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
             if( insert_pedestrians_at_random(cli_args.total_num_pedestrians) == FAILURE)
                 return FAILURE;
         }
+
+        if(cli_args.calculate_static_field == calculate_inverted_alizadeh_static_field){
+            // Its necessary to recalculate the static field because the pedestrians were introduced to the environment just now.
         
+            if(cli_args.calculate_static_field(exits_set.static_floor_field, false) == FAILURE) // Main static field
+                return FAILURE;
+
+            if(cli_args.calculate_static_field(exits_set.impassable_static_floor_field, true) == FAILURE) // Static field with traversable objects considered as impassable.
+                return FAILURE; 
+                
+            if(cli_args.show_debug_information || cli_args.print_static_floor_field){
+                printf("\n-------------------------- Timestep 0 -----------------------------\n\n");
+                print_double_grid(exits_set.static_floor_field);
+                print_double_grid(exits_set.impassable_static_floor_field);
+            }
+        }
+
         if(cli_args.output_format == OUTPUT_VISUALIZATION)
             print_pedestrian_position_grid(output_file, simu_index, 0);
 
@@ -266,7 +282,7 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
                     return FAILURE;  
 
                 if(cli_args.print_static_floor_field){
-                    printf("\n--------------------------------------------------------------\n\n");
+                    printf("\n-------------------------- Timestep %d -----------------------------\n\n", number_timesteps);
                     print_double_grid(exits_set.static_floor_field);
                     print_double_grid(exits_set.impassable_static_floor_field);
                 }

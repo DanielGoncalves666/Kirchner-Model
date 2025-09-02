@@ -74,8 +74,12 @@ void decay()
  */
 Function_Status single_diffusion(bool is_moving)
 {
+    static Location extended_modifiers[] = {{-1,-1}, {-1,0}, {-1,1}, {0,-1}, {0,1}, {1,-1}, {1,0}, {1,1}};
     static Location modifiers[] = {{-1,0}, {0,-1}, {0,1}, {1,0}}; // Diffusion doesn't occur in the diagonals.
-    static double probabilities[] = {1, 1, 1, 1};
+    static double probabilities[] = {1, 1, 1, 1, 1, 1, 1, 1};
+
+    int num_neighbors = cli_args.allow_diagonal_movements ? 8 : 4;
+    Location *current_modifier = cli_args.allow_diagonal_movements ? extended_modifiers : modifiers;
 
     if( fill_integer_grid(aux_dynamic_grid, cli_args.global_line_number, cli_args.global_column_number, 0) == FAILURE)
         return FAILURE;
@@ -91,30 +95,30 @@ Function_Status single_diffusion(bool is_moving)
                 if(! probability_test(cli_args.alpha))
                     continue; // The event doesn't happen.
 
-                int valid_neighbors = 4;
-                char valid_byte = 0; // The 4 least significant bits identify which cells are valid (1) or not (0) for diffusion.
-                for(int m = 0; m < 4; m++)
+                int valid_neighbors = num_neighbors;
+                char valid_byte = 0; // The 4 (8) least significant bits identify which cells are valid (1) or not (0) for diffusion.
+                for(int m = 0; m < num_neighbors; m++)
                 {
-                    if(! is_within_grid_lines(i + modifiers[m].lin) || ! is_within_grid_columns(j + modifiers[m].col))
+                    if(! is_within_grid_lines(i + current_modifier[m].lin) || ! is_within_grid_columns(j + current_modifier[m].col))
                     {
                         valid_neighbors--;
                         continue;
                     }
                     
-                    if(exits_set.static_floor_field[i + modifiers[m].lin][j + modifiers[m].col] == IMPASSABLE_OBJECT)
+                    if(exits_set.static_floor_field[i + current_modifier[m].lin][j + current_modifier[m].col] == IMPASSABLE_OBJECT)
                     {
                         valid_neighbors--;
                         continue; // The static floor field shows where the exits are, so they can still receive particles.
                     }
 
-                    valid_byte ^= 1U << (3 - m);
+                    valid_byte ^= 1U << (num_neighbors - (m + 1));
                 }
 
                 int chosen_index = roulette_wheel_selection((double *) &probabilities, valid_neighbors, valid_neighbors);
 
-                for(int m = 0; m < 4; m++)
+                for(int m = 0; m < num_neighbors; m++)
                 {
-                    if((valid_byte & (1U << (3 - m))) != 0)
+                    if((valid_byte & (1U << (num_neighbors - (m + 1)))) != 0)
                         chosen_index--;
 
                     if(chosen_index == -1)
@@ -122,7 +126,7 @@ Function_Status single_diffusion(bool is_moving)
                         if(is_moving)
                             aux_dynamic_grid[i][j] -= 1; // Diffusion that moves the particles.
 
-                        aux_dynamic_grid[i + modifiers[m].lin][j + modifiers[m].col] += 1;
+                        aux_dynamic_grid[i + current_modifier[m].lin][j + current_modifier[m].col] += 1;
                         break;
                     }
                 }

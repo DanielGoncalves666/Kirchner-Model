@@ -1,0 +1,21 @@
+20 30
+##############################
+#............................#
+#.pmmp.pmmp.pmmp...p..p....pm#
+#.pmmp.pmmpppmmp....#...ppp.m#
+#.pmmp.pmmp.pmmp.p..#..mmmmmm#
+#...................##########
+#.pmmp.pmmp.pmmp.............#
+#ppmmpppmmpppmmp.............#
+#.pmmp.pmmp.pmmp..pp...p..pp._
+#.................mm.pmmp.mm.#
+#.pmmp.pmmp.pmmp..mm.pmmp.mm.#
+#.pmmpppmmp.pmmp..pp......pp.#
+#.pmmp.pmmp.pmmp.............#
+#.....................pp.....#
+#.pmmp.pmmp.pmmp.pmmp.mm.pmmp#
+#.pmmp.pmmp.pmmp.pmmp.mm.pmmp#
+#.pmmp.pmmp.pmmp..p...pp.....#
+#............................#
+#............................#
+########_#####################

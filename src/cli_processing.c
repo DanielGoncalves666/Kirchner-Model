@@ -56,6 +56,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 "\n"
 "The --ignore-self-trace option is currently implemented for use with a velocity density field. Adapting this functionality for a particle density field has not been made."
 "\n"
+"If negative value is provided to the --cooldown option, the value for it will vary from 0 to 30."
 "Unnecessary options for some --env-load-method are ignored.\n";
 
 /* Keys for options without short-options. */
@@ -464,7 +465,7 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
             cli_args->traversable_as_impassable = true;
             break;
         case OPT_COOLDOWN:
-            cli_args->traversable_cooldown = true;
+            cli_args->traversable_cooldown = atoi(arg);
             break;
         case ARGP_KEY_ARG:
             fprintf(stderr, "No positional argument was expect, but %s was given.\n", arg);

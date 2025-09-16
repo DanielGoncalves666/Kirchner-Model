@@ -11,7 +11,7 @@ print_in_color()
 clear
 print_in_color "\033[0;32m" "Kirchner Experiments Script!"
 
-static_field=$1
+static_field=5
 dir_name="kirchner-traversable"
 mkdir -p output/$dir_name
 
@@ -19,8 +19,8 @@ mkdir -p output/$dir_name
 RUN_COMMAND="./build/kirchner.exe"
 
 print_in_color "\033[0;34m" "Kirchner Traversable Obstacles Experiment."
-for environment in "silva_laboratory.txt"; do
-    $RUN_COMMAND -o$dir_name/kirchner_traversable_$environment.txt -e$environment -m4 -O1 -s1 --density=0.3 --delta=0.3 --alpha=0.3 --kd=0 --ks=1 --static-field=$static_field --ignore-self-trace --skip-new-particles-decay --immediate-exit &
+for environment in "silva_laboratory" "silva_classroom" "daniel_anfiteatro"; do
+    $RUN_COMMAND -o$dir_name/kirchner_traversable_$environment.txt -e${environment}.txt -m4 -O1 -s1 --density=0.3 --delta=0.3 --alpha=0.3 --kd=1 --ks=2 --static-field=$static_field --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements &
 done
 
 

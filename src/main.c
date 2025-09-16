@@ -140,6 +140,24 @@ int main(int argc, char **argv)
             // Simulation set where the exit was combined with itself. This is used to correct errors in the plotting program.
 
         double *varying_constant = obtain_varying_constant(); // The pointer to the "constant" of the Kirchner model that will vary.
+        if(cli_args.traversable_cooldown < 0){
+            int old_value = cli_args.traversable_cooldown;
+
+            for(cli_args.traversable_cooldown = 0; cli_args.traversable_cooldown < 30; cli_args.traversable_cooldown++){
+                if(cli_args.output_format != OUTPUT_TIMESTEPS_COUNT)
+                    fprintf(output_file, "COOLDOWN %d PASSOS\n", cli_args.traversable_cooldown);
+                
+                
+                if(run_simulations(output_file, dynamic_floor_field_file) == FAILURE)
+                    return END_PROGRAM;
+
+                if(cli_args.output_format == OUTPUT_TIMESTEPS_COUNT)
+                    fprintf(output_file, "\n");
+            }
+
+            cli_args.traversable_cooldown = old_value;
+
+        }
         if(varying_constant == NULL)
         {
             if(run_simulations(output_file, dynamic_floor_field_file) == FAILURE)

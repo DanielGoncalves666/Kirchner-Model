@@ -103,12 +103,19 @@ Input/Output Configuration:
 Environment Dimensions (required for auto created environments):
 
   -c, --col=COLUMNS          Number of columns for the environment when it is
-                             being created.
+                             being created. This number includes the
+                             surrounding walls.
   -l, --lin=LINES            Number of lines for the environment when it is
-                             being created.
+                             being created. This number includes the
+                             surrounding walls.
   
 Simulation Variables (optional):
 
+      --alizadeh-alpha=ALI-ALPHA   Alizadeh Coefficient of crowd avoidance.
+                             Defaults to 1.
+      --cooldown=COOLDOWN    Indicates the number of timesteps that a
+                             pedestrian will be prohibited from trying to move
+                             to a traversable obstacle. Defaults to 5.
       --diagonal=DIAGONAL    The diagonal value for calculation of the static
                              floor field (default is 1.5).
       --seed=SEED            Initial seed for the srand function (default is
@@ -138,6 +145,9 @@ Variables and toggle options related to pedestrians (all optional):
   
 Kirchner model constants and options:
 
+      --allow-diagonal-movements   Allows pedestrian to move to its diagonal
+                             neighbors. By default they only move horizontally
+                             and vertically.
       --alpha=ALPHA          The probability that a particle in the dynamic
                              floor field will undergo diffusion. Value must be
                              between 0 and 1, both inclusive. Defaults to 0.5.
@@ -161,6 +171,8 @@ Kirchner model constants and options:
                              the strength of the static floor field when
                              calculating the transition probabilities for
                              pedestrians. Must be non-negative. Defaults to 1.
+      --skip-new-particles-decay   Don't apply decay for newly created dynamic
+                             particles.
   
 Range values for simulation focused on a constant:
 
@@ -174,6 +186,9 @@ Range values for simulation focused on a constant:
 Toggle Options (optional):
 
       --debug                Prints debug information to stdout.
+      --print-dff=DYN_FILE   Prints the dynamic floor field to stdout
+                             (default). If the name of a file is provided, the
+                             data is stored in it.
       --print-sff            Prints the static floor field to stdout.
       --simulation-set-info  Prints simulation set information (exits
                              coordinates) to the output file.
@@ -220,7 +235,7 @@ The --static-field option specifies the method used to calculate the static
 floor field. The following choices are available:
          1 - (default) Kirchner's alternative static floor field.
          2 -           Kirchner's original static floor field.
-         3 -           Kirchner's normalized original static floor field.
+         3 -           Kirchner's (simple) normalized original static floor field.
          4 -           Inverted Varas's static floor field.
          5 -           Inverted Alizadeh's static/dynamic floor field.
 

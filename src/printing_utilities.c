@@ -63,6 +63,8 @@ void print_heatmap(FILE *output_stream)
 */
 void print_pedestrian_position_grid(FILE *output_stream, int simulation_number, int timestep)
 {
+	int pedestrian_index;
+
 	if(!cli_args.write_to_file)
 		printf("\e[1;1H\e[2J");
 
@@ -73,15 +75,22 @@ void print_pedestrian_position_grid(FILE *output_stream, int simulation_number, 
 		for(int i = 0; i < cli_args.global_line_number; i++){
 			for(int j = 0; j < cli_args.global_column_number; j++)
 			{
-				if(pedestrian_position_grid[i][j] != 0)
-					fprintf(output_stream,"🟦");
+				if(pedestrian_position_grid[i][j] != 0){
+					pedestrian_index = pedestrian_position_grid[i][j] - 1;
+					if(pedestrian_set.list[pedestrian_index]->state == CROSSING_FAIL)
+						fprintf(output_stream, "⬛");
+					else if(pedestrian_set.list[pedestrian_index]->traversable_cooldown > 0)
+						fprintf(output_stream,"🟪");
+					else	
+						fprintf(output_stream,"🟦");
+				}
 				else if(exits_only_grid[i][j] == EXIT_CELL)
 					fprintf(output_stream,"🟩");
 				else if(exits_set.static_floor_field[i][j] == IMPASSABLE_OBJECT)
 					fprintf(output_stream,"🟧");
 				// else if(obstacle_grid[i][j] == TRAVERSABLE_OBJECT && obstacle_traversability_grid[i][j] == EASY_OBSC_TRAVERSABILITY)
 				// 	fprintf(output_stream,"📋");
-				else if(obstacle_grid[i][j] == TRAVERSABLE_OBJECT && obstacle_traversability_grid[i][j] == MEDIUM_OBSC_TRAVERSABILITY){
+				else if(obstacle_grid[i][j] == TRAVERSABLE_OBJECT && obstacle_traversability_grid[i][j] == cli_args.traversability_value){
 					if(cli_args.traversable_as_impassable)
 						fprintf(output_stream,"🟧");
 					else

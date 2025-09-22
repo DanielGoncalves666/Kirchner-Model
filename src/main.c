@@ -143,7 +143,7 @@ int main(int argc, char **argv)
         if(cli_args.traversable_cooldown < 0){
             int old_value = cli_args.traversable_cooldown;
 
-            for(cli_args.traversable_cooldown = 0; cli_args.traversable_cooldown < 30; cli_args.traversable_cooldown++){
+            for(cli_args.traversable_cooldown = 0; cli_args.traversable_cooldown <= 30; cli_args.traversable_cooldown++){
                 if(cli_args.output_format != OUTPUT_TIMESTEPS_COUNT)
                     fprintf(output_file, "COOLDOWN %d PASSOS\n", cli_args.traversable_cooldown);
                 
@@ -158,7 +158,7 @@ int main(int argc, char **argv)
             cli_args.traversable_cooldown = old_value;
 
         }
-        if(varying_constant == NULL)
+        else if(varying_constant == NULL)
         {
             if(run_simulations(output_file, dynamic_floor_field_file) == FAILURE)
                 return END_PROGRAM;
@@ -274,7 +274,6 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
             apply_pedestrian_movement();
 
             update_pedestrian_position_grid();
-            reset_pedestrian_state();
             
             number_timesteps++;
 
@@ -285,6 +284,8 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
                     
                 print_pedestrian_position_grid(output_file, simu_index,number_timesteps);
             }
+
+            reset_pedestrian_state();
 
             decay();
             // When the particle moves instead of the creation of particles, it generates results closer to the article.

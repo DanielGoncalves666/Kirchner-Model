@@ -400,10 +400,10 @@ void test_obstacle_crossing()
         }
 
         // Test failed. The pedestrian will remain at the same cell.
-        current_pedestrian->state = STOPPED;
+        current_pedestrian->state = CROSSING_FAIL;
 
         if(cli_args.traversable_cooldown != 0)
-            current_pedestrian->traversable_cooldown = cli_args.traversable_cooldown + 1; // A cooldown of N + 1timesteps is set (At the end of the current timestep it will be down to N).
+            current_pedestrian->traversable_cooldown = cli_args.traversable_cooldown + 1; // A cooldown of N + 1 timesteps is set (At the end of the current timestep it will be down to N).
 
         if(cli_args.show_debug_information)
                 printf("Ped %d - Movement to an traversable obstacle at %d %d failed.\n", current_pedestrian->id, target.lin, target.col);
@@ -427,7 +427,7 @@ void apply_pedestrian_movement()
         if(current_pedestrian->state != GOT_OUT && !cli_args.velocity_density_field)
             increase_particle_at(current_pedestrian->current); // When the dynamic field is defined as a particle density field, increases the particle count for all cells occupied by pedestrians (not only for those which the pedestrian is moving away).
         
-        if(current_pedestrian->state == GOT_OUT || current_pedestrian->state == STOPPED)
+        if(current_pedestrian->state == GOT_OUT || current_pedestrian->state == STOPPED || current_pedestrian->state == CROSSING_FAIL)
             continue; // Pedestrian is ignored
 
         if(current_pedestrian->state == MOVING)

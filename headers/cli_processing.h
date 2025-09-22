@@ -33,6 +33,7 @@ typedef struct{
     bool skip_new_particles_decay;
     bool traversable_as_impassable; // Indicates if the traversable objects should be considered as impassable.
     int traversable_cooldown;
+    double traversability_value;
     int global_line_number;
     int global_column_number;
     int num_simulations;

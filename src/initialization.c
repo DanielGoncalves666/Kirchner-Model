@@ -439,7 +439,7 @@ static Function_Status symbol_processing(char read_char, Location coordinates)
         case 'm':
         case 'M':
             obstacle_grid[coordinates.lin][coordinates.col] = TRAVERSABLE_OBJECT;
-            obstacle_traversability_grid[coordinates.lin][coordinates.col] = MEDIUM_OBSC_TRAVERSABILITY;    
+            obstacle_traversability_grid[coordinates.lin][coordinates.col] = cli_args.traversability_value;    
             break;
         // case 'h':
         // case 'H':

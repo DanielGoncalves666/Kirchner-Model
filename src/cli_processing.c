@@ -84,6 +84,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 #define OPT_STATIC_FIELD 3000
 #define OPT_TRAVERSABLE_OFF 3001
 #define OPT_COOLDOWN 3002
+#define OPT_TRAVERSABILITY 3003
 #define OPT_PRINT_STATIC_FLOOR_FIELD 4001
 #define OPT_PRINT_DYNAMIC_FLOOR_FIELD 4002
 
@@ -109,6 +110,7 @@ struct argp_option options[] = {
     {"static-field", OPT_STATIC_FIELD, "STATIC", 0, "The method used to determine the static floor field. Defaults to 1 (Kirchner's alternative method)."},
     {"traversable-off", OPT_TRAVERSABLE_OFF, 0, 0, "Indicates if traversable objects in the environment should be considered as impassable."},
     {"cooldown", OPT_COOLDOWN, "COOLDOWN", 0, "Indicates the number of timesteps that a pedestrian will be prohibited from trying to move to a traversable obstacle. Defaults to 5."},
+    {"traversability", OPT_TRAVERSABILITY, "TRAVERSABILITY", 0, "Indicates how easily a pedestrian is able to move through a traversable obstacle. Value must be between 0 and 1. Defaults to 0.6."},
 
     {"\nVariables and toggle options related to pedestrians (all optional):\n",0,0,OPTION_DOC,0,9},
     {"ped", 'p', "PEDESTRIANS", 0, "Manually set the number of pedestrians to be randomly placed in the environment. If provided takes precedence over --density.",10},
@@ -171,6 +173,7 @@ Command_Line_Args cli_args = {
     .skip_new_particles_decay = false,
     .traversable_as_impassable = false,
     .traversable_cooldown = 5,
+    .traversability_value = 0.6,
     .global_line_number = 0,
     .global_column_number = 0,
     .num_simulations = 1, // A single simulation by default.
@@ -467,6 +470,9 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
         case OPT_COOLDOWN:
             cli_args->traversable_cooldown = atoi(arg);
             break;
+        case OPT_TRAVERSABILITY:
+            cli_args->traversability_value = atof(arg);
+            break;
         case ARGP_KEY_ARG:
             fprintf(stderr, "No positional argument was expect, but %s was given.\n", arg);
             return EINVAL;
@@ -625,6 +631,9 @@ void extract_full_command(char *full_command, int key, char *arg)
             break;
         case OPT_COOLDOWN:
             sprintf(aux, " --cooldown=%s", arg);
+            break;
+        case OPT_TRAVERSABILITY:
+            sprintf(aux, " --traversability=%s", arg);
             break;
         case 'o':
         case 'O':

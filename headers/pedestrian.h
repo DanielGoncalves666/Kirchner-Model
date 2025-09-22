@@ -8,7 +8,7 @@
 
 typedef struct cell_conflict * Cell_Conflict;
 
-enum Pedestrian_State {LEAVING, GOT_OUT, STOPPED, MOVING};
+enum Pedestrian_State {LEAVING, GOT_OUT, STOPPED, CROSSING_FAIL, MOVING};
 
 struct pedestrian {
     int id;

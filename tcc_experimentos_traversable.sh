@@ -31,143 +31,148 @@ RUN_COMMAND="./build/kirchner.exe"
 KD=1
 KS=2
 
-NUM_SIMU=100
-OUTPUT_TYPE=2
-COOLDOWN=-1
+for TRAVERSABILITY in 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9; do
 
-#alizadeh_restaurant_1 experiments
+    # NUM_SIMU=1000
+    # OUTPUT_TYPE=2
+    # COOLDOWN=-1
 
-print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_1 - Experiment"
-$RUN_COMMAND -o$simu_dir/alizadeh_restaurant_1_simu_traversable.txt -ealizadeh_restaurant_1_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN &
+    # #alizadeh_restaurant_1 experiments
 
-print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_1 - Experiment - traversable-off"
-$RUN_COMMAND -o$simu_dir/alizadeh_restaurant_1_simu_traversable_OFF.txt -ealizadeh_restaurant_1_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
+    # print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_1 - Experiment"
+    # $RUN_COMMAND -o$simu_dir/alizadeh_restaurant_1_simu_traversable_$TRAVERSABILITY.txt -ealizadeh_restaurant_1_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY &
 
-#alizadeh_restaurant_uniform experiments
+    # print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_1 - Experiment - traversable-off"
+    # $RUN_COMMAND -o$simu_dir/alizadeh_restaurant_1_simu_traversable_OFF.txt -ealizadeh_restaurant_1_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
 
-print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_uniform - Experiment"
-$RUN_COMMAND -o$simu_dir/alizadeh_restaurant_uniform_simu_traversable.txt -ealizadeh_restaurant_uniform_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN &
+    # #alizadeh_restaurant_uniform experiments
 
-print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_uniform - Experiment - traversable-off"
-$RUN_COMMAND -o$simu_dir/alizadeh_restaurant_uniform_simu_traversable_OFF.txt -ealizadeh_restaurant_uniform_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
+    # print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_uniform - Experiment"
+    # $RUN_COMMAND -o$simu_dir/alizadeh_restaurant_uniform_simu_traversable_$TRAVERSABILITY.txt -ealizadeh_restaurant_uniform_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY &
 
-#silva_classroom experiments
+    # print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_uniform - Experiment - traversable-off"
+    # $RUN_COMMAND -o$simu_dir/alizadeh_restaurant_uniform_simu_traversable_OFF.txt -ealizadeh_restaurant_uniform_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
 
-print_in_color "\033[0;34m" "Traversable - silva_classroom - Experiment"
-$RUN_COMMAND -o$simu_dir/silva_classroom_simu_traversable.txt -esilva_classroom.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN &
+    # #silva_classroom experiments
 
-print_in_color "\033[0;34m" "Traversable - silva_classroom - Experiment - traversable-off"
-$RUN_COMMAND -o$simu_dir/silva_classroom_simu_traversable_OFF.txt -esilva_classroom.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
+    # print_in_color "\033[0;34m" "Traversable - silva_classroom - Experiment"
+    # $RUN_COMMAND -o$simu_dir/silva_classroom_simu_traversable_$TRAVERSABILITY.txt -esilva_classroom.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY &
 
-#silva_laboratory experiments
+    # print_in_color "\033[0;34m" "Traversable - silva_classroom - Experiment - traversable-off"
+    # $RUN_COMMAND -o$simu_dir/silva_classroom_simu_traversable_OFF.txt -esilva_classroom.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
 
-print_in_color "\033[0;34m" "Traversable - silva_laboratory - Experiment"
-$RUN_COMMAND -o$simu_dir/silva_laboratory_simu_traversable.txt -esilva_laboratory.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN &
+    # #silva_laboratory experiments
 
-print_in_color "\033[0;34m" "Traversable - silva_laboratory - Experiment - traversable-off"
-$RUN_COMMAND -o$simu_dir/silva_laboratory_simu_traversable_OFF.txt -esilva_laboratory.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
+    # print_in_color "\033[0;34m" "Traversable - silva_laboratory - Experiment"
+    # $RUN_COMMAND -o$simu_dir/silva_laboratory_simu_traversable_$TRAVERSABILITY.txt -esilva_laboratory.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY &
 
-#daniel_anfitratro experiments
+    # print_in_color "\033[0;34m" "Traversable - silva_laboratory - Experiment - traversable-off"
+    # $RUN_COMMAND -o$simu_dir/silva_laboratory_simu_traversable_OFF.txt -esilva_laboratory.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
 
-print_in_color "\033[0;34m" "Traversable - daniel_anfiteatro - Experiment"
-$RUN_COMMAND -o$simu_dir/daniel_anfiteatro_simu_traversable.txt -edaniel_anfiteatro.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN &
+    # #daniel_anfitratro experiments
 
-print_in_color "\033[0;34m" "Traversable - daniel_anfiteatro - Experiment - traversable-off"
-$RUN_COMMAND -o$simu_dir/daniel_anfiteatro_simu_traversable_OFF.txt -edaniel_anfiteatro.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
+    # print_in_color "\033[0;34m" "Traversable - daniel_anfiteatro - Experiment"
+    # $RUN_COMMAND -o$simu_dir/daniel_anfiteatro_simu_traversable_$TRAVERSABILITY.txt -edaniel_anfiteatro.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY &
 
-wait
+    # print_in_color "\033[0;34m" "Traversable - daniel_anfiteatro - Experiment - traversable-off"
+    # $RUN_COMMAND -o$simu_dir/daniel_anfiteatro_simu_traversable_OFF.txt -edaniel_anfiteatro.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
 
-# ##################################### Movement ###################################################################
-NUM_SIMU=1
-OUTPUT_TYPE=1
+    # wait
 
-#alizadeh_restaurant_1 experiments
+    # ##################################### Movement ###################################################################
+    NUM_SIMU=1
+    OUTPUT_TYPE=1
+    COOLDOWN=5
 
-print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_1 - Movement"
-$RUN_COMMAND -o$mov_dir/alizadeh_restaurant_1_mov_traversable.txt -ealizadeh_restaurant_1_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN &
+    #alizadeh_restaurant_1 experiments
 
-print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_1 - Movement - traversable-off"
-$RUN_COMMAND -o$mov_dir/alizadeh_restaurant_1_mov_traversable_OFF.txt -ealizadeh_restaurant_1_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
+    print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_1 - Movement"
+    $RUN_COMMAND -o$mov_dir/alizadeh_restaurant_1_mov_traversable_$TRAVERSABILITY.txt -ealizadeh_restaurant_1_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY &
 
-#alizadeh_restaurant_uniform experiments
+    print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_1 - Movement - traversable-off"
+    $RUN_COMMAND -o$mov_dir/alizadeh_restaurant_1_mov_traversable_OFF.txt -ealizadeh_restaurant_1_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
 
-print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_uniform - Movement"
-$RUN_COMMAND -o$mov_dir/alizadeh_restaurant_uniform_mov_traversable.txt -ealizadeh_restaurant_uniform_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN &
+    #alizadeh_restaurant_uniform experiments
 
-print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_uniform - Movement - traversable-off"
-$RUN_COMMAND -o$mov_dir/alizadeh_restaurant_uniform_mov_traversable_OFF.txt -ealizadeh_restaurant_uniform_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
+    print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_uniform - Movement"
+    $RUN_COMMAND -o$mov_dir/alizadeh_restaurant_uniform_mov_traversable_$TRAVERSABILITY.txt -ealizadeh_restaurant_uniform_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY &
 
-#silva_classroom experiments
+    print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_uniform - Movement - traversable-off"
+    $RUN_COMMAND -o$mov_dir/alizadeh_restaurant_uniform_mov_traversable_OFF.txt -ealizadeh_restaurant_uniform_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
 
-print_in_color "\033[0;34m" "Traversable - silva_classroom - Movement"
-$RUN_COMMAND -o$mov_dir/silva_classroom_mov_traversable.txt -esilva_classroom.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN &
+    #silva_classroom experiments
 
-print_in_color "\033[0;34m" "Traversable - silva_classroom - Movement - traversable-off"
-$RUN_COMMAND -o$mov_dir/silva_classroom_mov_traversable_OFF.txt -esilva_classroom.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
+    print_in_color "\033[0;34m" "Traversable - silva_classroom - Movement"
+    $RUN_COMMAND -o$mov_dir/silva_classroom_mov_traversable_$TRAVERSABILITY.txt -esilva_classroom.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY &
 
-#silva_laboratory experiments
+    print_in_color "\033[0;34m" "Traversable - silva_classroom - Movement - traversable-off"
+    $RUN_COMMAND -o$mov_dir/silva_classroom_mov_traversable_OFF.txt -esilva_classroom.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
 
-print_in_color "\033[0;34m" "Traversable - silva_laboratory - Movement"
-$RUN_COMMAND -o$mov_dir/silva_laboratory_mov_traversable.txt -esilva_laboratory.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN &
+    #silva_laboratory experiments
 
-print_in_color "\033[0;34m" "Traversable - silva_laboratory - Movement - traversable-off"
-$RUN_COMMAND -o$mov_dir/silva_laboratory_mov_traversable_OFF.txt -esilva_laboratory.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
+    print_in_color "\033[0;34m" "Traversable - silva_laboratory - Movement"
+    $RUN_COMMAND -o$mov_dir/silva_laboratory_mov_traversable_$TRAVERSABILITY.txt -esilva_laboratory.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY &
 
-#daniel_anfitratro experiments
+    print_in_color "\033[0;34m" "Traversable - silva_laboratory - Movement - traversable-off"
+    $RUN_COMMAND -o$mov_dir/silva_laboratory_mov_traversable_OFF.txt -esilva_laboratory.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
 
-print_in_color "\033[0;34m" "Traversable - daniel_anfiteatro - Movement"
-$RUN_COMMAND -o$mov_dir/daniel_anfiteatro_mov_traversable.txt -edaniel_anfiteatro.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN &
+    #daniel_anfitratro experiments
 
-print_in_color "\033[0;34m" "Traversable - daniel_anfiteatro - Movement - traversable-off"
-$RUN_COMMAND -o$mov_dir/daniel_anfiteatro_mov_traversable_OFF.txt -edaniel_anfiteatro.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
+    print_in_color "\033[0;34m" "Traversable - daniel_anfiteatro - Movement"
+    $RUN_COMMAND -o$mov_dir/daniel_anfiteatro_mov_traversable_$TRAVERSABILITY.txt -edaniel_anfiteatro.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY &
 
-wait
+    print_in_color "\033[0;34m" "Traversable - daniel_anfiteatro - Movement - traversable-off"
+    $RUN_COMMAND -o$mov_dir/daniel_anfiteatro_mov_traversable_OFF.txt -edaniel_anfiteatro.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off &
 
-##################################### Static Fields ###################################################################
-NUM_SIMU=1
-OUTPUT_TYPE=1
+    wait
 
-#alizadeh_restaurant_1 experiments
+    ##################################### Static Fields ###################################################################
+    NUM_SIMU=1
+    OUTPUT_TYPE=1
 
-print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_1 - Static Field"
-$RUN_COMMAND -o$garbage_dir/alizadeh_restaurant_1_mov_traversable.txt -ealizadeh_restaurant_1_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --print-sff >> output/$static_dir/alizadeh_restaurant_1_traversable_${COOLDOWN}_sff.txt &
+    #alizadeh_restaurant_1 experiments
 
-print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_1 - Static Field - traversable-off"
-$RUN_COMMAND -o$garbage_dir/alizadeh_restaurant_1_mov_traversable_OFF.txt -ealizadeh_restaurant_1_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off --print-sff >> output/$static_dir/alizadeh_restaurant_1_traversable_OFF_sff.txt &
+    print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_1 - Static Field"
+    $RUN_COMMAND -o$garbage_dir/alizadeh_restaurant_1_mov_traversable_$TRAVERSABILITY.txt -ealizadeh_restaurant_1_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY --print-sff >> output/$static_dir/alizadeh_restaurant_1_traversable_${COOLDOWN}_sff.txt &
 
-#alizadeh_restaurant_uniform experiments
+    print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_1 - Static Field - traversable-off"
+    $RUN_COMMAND -o$garbage_dir/alizadeh_restaurant_1_mov_traversable_OFF.txt -ealizadeh_restaurant_1_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off --print-sff >> output/$static_dir/alizadeh_restaurant_1_traversable_OFF_sff.txt &
 
-print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_uniform - Static Field"
-$RUN_COMMAND -o$garbage_dir/alizadeh_restaurant_uniform_mov_traversable.txt -ealizadeh_restaurant_uniform_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --print-sff >> output/$static_dir/alizadeh_restaurant_uniform_${COOLDOWN}_sff.txt &
+    #alizadeh_restaurant_uniform experiments
 
-print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_uniform - Static Field - traversable-off"
-$RUN_COMMAND -o$garbage_dir/alizadeh_restaurant_uniform_mov_traversable_OFF.txt -ealizadeh_restaurant_uniform_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off --print-sff >> output/$static_dir/alizadeh_restaurant_uniform_traversable_OFF_sff.txt &
+    print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_uniform - Static Field"
+    $RUN_COMMAND -o$garbage_dir/alizadeh_restaurant_uniform_mov_traversable_$TRAVERSABILITY.txt -ealizadeh_restaurant_uniform_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY --print-sff >> output/$static_dir/alizadeh_restaurant_uniform_${COOLDOWN}_sff.txt &
 
-#silva_classroom experiments
+    print_in_color "\033[0;34m" "Traversable - alizadeh_restaurant_uniform - Static Field - traversable-off"
+    $RUN_COMMAND -o$garbage_dir/alizadeh_restaurant_uniform_mov_traversable_OFF.txt -ealizadeh_restaurant_uniform_traversable.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off --print-sff >> output/$static_dir/alizadeh_restaurant_uniform_traversable_OFF_sff.txt &
 
-print_in_color "\033[0;34m" "Traversable - silva_classroom - Static Field"
-$RUN_COMMAND -o$garbage_dir/silva_classroom_mov_traversable.txt -esilva_classroom.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --print-sff >> output/$static_dir/silva_classroom_${COOLDOWN}_sff.txt &
+    #silva_classroom experiments
 
-print_in_color "\033[0;34m" "Traversable - silva_classroom - Static Field - traversable-off"
-$RUN_COMMAND -o$garbage_dir/silva_classroom_mov_traversable_OFF.txt -esilva_classroom.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off --print-sff >> output/$static_dir/silva_classroom_traversable_OFF_sff.txt &
+    print_in_color "\033[0;34m" "Traversable - silva_classroom - Static Field"
+    $RUN_COMMAND -o$garbage_dir/silva_classroom_mov_traversable_$TRAVERSABILITY.txt -esilva_classroom.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY --print-sff >> output/$static_dir/silva_classroom_${COOLDOWN}_sff.txt &
 
-#silva_laboratory experiments
+    print_in_color "\033[0;34m" "Traversable - silva_classroom - Static Field - traversable-off"
+    $RUN_COMMAND -o$garbage_dir/silva_classroom_mov_traversable_OFF.txt -esilva_classroom.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off --print-sff >> output/$static_dir/silva_classroom_traversable_OFF_sff.txt &
 
-print_in_color "\033[0;34m" "Traversable - silva_laboratory - Static Field"
-$RUN_COMMAND -o$garbage_dir/silva_laboratory_mov_traversable.txt -esilva_laboratory.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --print-sff >> output/$static_dir/silva_laboratory_${COOLDOWN}_sff.txt &
+    #silva_laboratory experiments
 
-print_in_color "\033[0;34m" "Traversable - silva_laboratory - Static Field - traversable-off"
-$RUN_COMMAND -o$garbage_dir/silva_laboratory_mov_traversable_OFF.txt -esilva_laboratory.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off --print-sff >> output/$static_dir/silva_laboratory_traversable_OFF_sff.txt  &
+    print_in_color "\033[0;34m" "Traversable - silva_laboratory - Static Field"
+    $RUN_COMMAND -o$garbage_dir/silva_laboratory_mov_traversable_$TRAVERSABILITY.txt -esilva_laboratory.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY --print-sff >> output/$static_dir/silva_laboratory_${COOLDOWN}_sff.txt &
 
-#daniel_anfitratro experiments
+    print_in_color "\033[0;34m" "Traversable - silva_laboratory - Static Field - traversable-off"
+    $RUN_COMMAND -o$garbage_dir/silva_laboratory_mov_traversable_OFF.txt -esilva_laboratory.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off --print-sff >> output/$static_dir/silva_laboratory_traversable_OFF_sff.txt  &
 
-print_in_color "\033[0;34m" "Traversable - daniel_anfiteatro - Static Field"
-$RUN_COMMAND -o$garbage_dir/daniel_anfiteatro_mov_traversable.txt -edaniel_anfiteatro.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --print-sff >> output/$static_dir/daniel_anfiteatro_${COOLDOWN}_sff.txt &
+    #daniel_anfitratro experiments
 
-print_in_color "\033[0;34m" "Traversable - daniel_anfiteatro - Static Field - traversable-off"
-$RUN_COMMAND -o$garbage_dir/daniel_anfiteatro_mov_traversable_OFF.txt -edaniel_anfiteatro.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off --print-sff >> output/$static_dir/daniel_anfiteatro_traversable_OFF_sff.txt &
+    print_in_color "\033[0;34m" "Traversable - daniel_anfiteatro - Static Field"
+    $RUN_COMMAND -o$garbage_dir/daniel_anfiteatro_mov_traversable_$TRAVERSABILITY.txt -edaniel_anfiteatro.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --cooldown=$COOLDOWN --traversability=$TRAVERSABILITY --print-sff >> output/$static_dir/daniel_anfiteatro_${COOLDOWN}_sff.txt &
 
-wait
+    print_in_color "\033[0;34m" "Traversable - daniel_anfiteatro - Static Field - traversable-off"
+    $RUN_COMMAND -o$garbage_dir/daniel_anfiteatro_mov_traversable_OFF.txt -edaniel_anfiteatro.txt -m4 -O$OUTPUT_TYPE -s$NUM_SIMU --delta=0.3 --alpha=0.3 --kd=$KD --ks=$KS --static-field=5 --ignore-self-trace --skip-new-particles-decay --allow-diagonal-movements --traversable-off --print-sff >> output/$static_dir/daniel_anfiteatro_traversable_OFF_sff.txt &
+
+    wait
+
+done
 
 rm -r output/$garbage_dir
 

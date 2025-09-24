@@ -10,6 +10,11 @@ typedef struct cell_conflict * Cell_Conflict;
 
 enum Pedestrian_State {LEAVING, GOT_OUT, STOPPED, CROSSING_FAIL, MOVING};
 
+typedef struct traversable_statistics{
+    int num_successes;
+    int num_fails;
+}Traversable_Statistics;
+
 struct pedestrian {
     int id;
     enum Pedestrian_State state;
@@ -25,6 +30,7 @@ typedef struct pedestrian * Pedestrian;
 typedef struct{
     Pedestrian *list;
     int num_pedestrians;
+    Traversable_Statistics traversable_statistics;
 } Pedestrian_Set;
 
 Function_Status insert_pedestrians_at_random(int qtd);

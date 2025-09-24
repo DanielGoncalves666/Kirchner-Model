@@ -36,6 +36,8 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 "\t 1 - (default) Visual print of the environment.\n"
 "\t 2 -           Number of timesteps required for the termination of each simulation.\n"
 "\t 3 -           Heatmap of the environment cells.\n"
+"\t 4 -           Number of fails to traverse obstacles.\n"
+"\t 5 -           Number of successes to traverse obstacles.\n"
 "\n"
 "The --static-field option specifies the method used to calculate the static floor field. The following choices are available:\n"
 "\t 1 - (default) Kirchner's alternative static floor field.\n"
@@ -223,7 +225,7 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
             break;
         case 'O':
             int output_format = atoi(arg);
-            if(output_format < OUTPUT_VISUALIZATION || output_format > OUTPUT_HEATMAP)
+            if(output_format < OUTPUT_VISUALIZATION || output_format > OUTPUT_TRAVERSABLE_SUCCESSES)
             {
                 fprintf(stderr, "Invalid output format.\n");
                 return EIO;

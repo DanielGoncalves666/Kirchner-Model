@@ -144,14 +144,14 @@ int main(int argc, char **argv)
             int old_value = cli_args.traversable_cooldown;
 
             for(cli_args.traversable_cooldown = 0; cli_args.traversable_cooldown <= 30; cli_args.traversable_cooldown++){
-                if(cli_args.output_format != OUTPUT_TIMESTEPS_COUNT)
+                if(cli_args.output_format != OUTPUT_TIMESTEPS_COUNT && cli_args.output_format != OUTPUT_TRAVERSABLE_FAILS && cli_args.output_format != OUTPUT_TRAVERSABLE_SUCCESSES)
                     fprintf(output_file, "COOLDOWN %d PASSOS\n", cli_args.traversable_cooldown);
                 
                 
                 if(run_simulations(output_file, dynamic_floor_field_file) == FAILURE)
                     return END_PROGRAM;
 
-                if(cli_args.output_format == OUTPUT_TIMESTEPS_COUNT)
+                if(cli_args.output_format == OUTPUT_TIMESTEPS_COUNT || cli_args.output_format == OUTPUT_TRAVERSABLE_FAILS || cli_args.output_format == OUTPUT_TRAVERSABLE_SUCCESSES)
                     fprintf(output_file, "\n");
             }
 
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
                 if(run_simulations(output_file, dynamic_floor_field_file) == FAILURE) // The simulations actually happen here.
                     return END_PROGRAM;
 
-                if(cli_args.output_format == OUTPUT_TIMESTEPS_COUNT)
+                if(cli_args.output_format == OUTPUT_TIMESTEPS_COUNT || cli_args.output_format == OUTPUT_TRAVERSABLE_FAILS || cli_args.output_format == OUTPUT_TRAVERSABLE_SUCCESSES)
                     fprintf(output_file, "\n");
 
                 print_varying_execution_status(*varying_constant, cli_args.max);
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
         if(origin_uses_auxiliary_data() == true)
             deallocate_exits();
 
-        if(cli_args.output_format == OUTPUT_TIMESTEPS_COUNT)
+        if(cli_args.output_format == OUTPUT_TIMESTEPS_COUNT || cli_args.output_format == OUTPUT_TRAVERSABLE_FAILS || cli_args.output_format == OUTPUT_TRAVERSABLE_SUCCESSES)
             fprintf(output_file, "\n");
 
         if(cli_args.output_format == OUTPUT_HEATMAP)
@@ -281,8 +281,9 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
             {
                 if(!cli_args.write_to_file)
                     sleep(1);
-                    
-                print_pedestrian_position_grid(output_file, simu_index,number_timesteps);
+                   
+                if(number_timesteps == 1 || number_timesteps % 15 == 0 || number_timesteps % 20 == 0) // Temporário    
+                    print_pedestrian_position_grid(output_file, simu_index,number_timesteps);
             }
 
             reset_pedestrian_state();
@@ -315,8 +316,16 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
 
         if(cli_args.output_format == OUTPUT_TIMESTEPS_COUNT)
             fprintf(output_file,"%d ", number_timesteps);
+        else if(cli_args.output_format == OUTPUT_TRAVERSABLE_FAILS){
+            fprintf(output_file,"%d ", pedestrian_set.traversable_statistics.num_fails);
+        }else if(cli_args.output_format == OUTPUT_TRAVERSABLE_SUCCESSES){
+            fprintf(output_file,"%d ", pedestrian_set.traversable_statistics.num_successes);
+        }
+
 
         fflush(output_file);
+
+        pedestrian_set.traversable_statistics = (Traversable_Statistics) {0,0};
 
         print_simulation_index(simu_index + 1, cli_args.num_simulations);
     }

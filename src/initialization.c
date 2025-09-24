@@ -77,6 +77,10 @@ Function_Status open_output_file(FILE **output_file)
                 output_type_name = "evacuation_time";
             else if(cli_args.output_format == OUTPUT_HEATMAP)
                 output_type_name = "heatmap";
+            else if(cli_args.output_format == OUTPUT_TRAVERSABLE_FAILS)
+                output_type_name = "traversable_statistics_fails";
+            else if(cli_args.output_format == OUTPUT_TRAVERSABLE_SUCCESSES)
+                output_type_name = "traversable_statistics_successes";
             
             time_t current_time = time(NULL);
 	        struct tm * time_information = localtime(&current_time);

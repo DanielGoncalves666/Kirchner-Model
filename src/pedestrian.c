@@ -29,7 +29,7 @@ typedef struct cell_conflict{
 }cell_conflict;
 
 Int_Grid pedestrian_position_grid = NULL; // Grid containing pedestrians at their respective positions.
-Pedestrian_Set pedestrian_set = {NULL,0};
+Pedestrian_Set pedestrian_set = {NULL,0, 0};
 
 static Pedestrian create_pedestrian(Location ped_coordinates);
 void calculate_transition_probabilities(Pedestrian current_pedestrian);
@@ -387,7 +387,10 @@ void test_obstacle_crossing()
         if(! is_traversable_obstacle(target))
             continue;
 
-        // The pedestrian is trying to move to a cell with a traversable obstacle
+        if(are_same_coordinates(target, current_pedestrian->current)) // Automatically succeed if its the current cell.
+            continue; 
+
+        // The pedestrian is trying to move to a cell with a traversable obstacle that isn't the cell it is currently occupying.
 
         double sorted_value = rand_within_limits(0,1);
         if(sorted_value <= get_traversability_value(target) + TOLERANCE)
@@ -396,11 +399,14 @@ void test_obstacle_crossing()
 
             if(cli_args.show_debug_information)
                 printf("Ped %d - Movement to an traversable obstacle at %d %d successful.\n", current_pedestrian->id, target.lin, target.col);
+
+            pedestrian_set.traversable_statistics.num_successes++;
             continue;
         }
 
         // Test failed. The pedestrian will remain at the same cell.
         current_pedestrian->state = CROSSING_FAIL;
+        pedestrian_set.traversable_statistics.num_fails++;
 
         if(cli_args.traversable_cooldown != 0)
             current_pedestrian->traversable_cooldown = cli_args.traversable_cooldown + 1; // A cooldown of N + 1 timesteps is set (At the end of the current timestep it will be down to N).

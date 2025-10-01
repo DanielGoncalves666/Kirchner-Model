@@ -35,6 +35,7 @@ The environment files must be placed in the `environment/` directory. Each file 
 |Symbol    | Meaning                   |
 |    ---   |        ---                |
 | \#       | Impassable Obstacles      |
+| *        | Fire                      |
 | m or M   | Passable obstacles        |
 | p or P   | Pedestrians               |
 | _        | Exits                     |

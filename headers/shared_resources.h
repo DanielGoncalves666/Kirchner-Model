@@ -55,11 +55,16 @@ typedef struct{
 }Location;
 
 #define TOLERANCE 1E-10
+#define CELL_LENGTH 0.4
+#define TIMESTEP_TIME (4.0 / 15)
 
 #define IMPASSABLE_OBJECT -1000
 #define TRAVERSABLE_OBJECT -1001
 #define EXIT_CELL 1 // The exit value in the Varas article.
 #define EMPTY_CELL -1002
+#define FIRE_CELL -1003
+#define DANGER_CELL -1004 // Cell adjacent to a fire that isn't a risky cell.
+#define RISKY_CELL -1005 //  Cell between a fire and a wall.
 
 #define IMPASSABLE_OBSC_TRAVERSABILITY 0 
 // #define HARD_OBSC_TRAVERSABILITY 0.3 
@@ -75,5 +80,8 @@ double euclidean_distance(Location first, Location second);
 float rand_within_limits(float min, float max);
 bool probability_test(double probability);
 int roulette_wheel_selection(double *probability_list, int length, double total_probability);
+
+extern Location von_neumann_neighbor_modifiers[4];
+extern Location moore_neighbor_modifiers[8];
 
 #endif

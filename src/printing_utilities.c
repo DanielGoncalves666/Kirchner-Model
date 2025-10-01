@@ -75,7 +75,9 @@ void print_pedestrian_position_grid(FILE *output_stream, int simulation_number, 
 		for(int i = 0; i < cli_args.global_line_number; i++){
 			for(int j = 0; j < cli_args.global_column_number; j++)
 			{
-				if(pedestrian_position_grid[i][j] != 0){
+				if(obstacle_grid[i][j] == FIRE_CELL)
+					fprintf(output_stream, "🔥");
+				else if(pedestrian_position_grid[i][j] != 0){
 					pedestrian_index = pedestrian_position_grid[i][j] - 1;
 					if(pedestrian_set.list[pedestrian_index]->state == CROSSING_FAIL)
 						fprintf(output_stream, "⬛");

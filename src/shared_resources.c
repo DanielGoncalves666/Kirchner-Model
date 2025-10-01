@@ -14,6 +14,9 @@
 #include"../headers/cli_processing.h"
 #include"../headers/shared_resources.h"
 
+Location von_neumann_neighbor_modifiers[4] = {{-1, 0}, {0, -1}, {0, 1} , {1, 0}};
+Location moore_neighbor_modifiers[8] = {{-1,-1}, {-1,0}, {-1,1}, {0,-1}, {0,1}, {1,-1}, {1,0}, {1,1}};
+
 /**
  * Verifies if the environment_origin selected uses data extracted from an auxiliary file.
  * 

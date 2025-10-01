@@ -19,12 +19,14 @@
 #include"../headers/printing_utilities.h"
 #include"../headers/shared_resources.h"
 #include"../headers/dynamic_field.h"
+#include"../headers/fire.h"
 
 static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_output_file);
 static Function_Status conflict_solving();
 static void deallocate_program_structures(FILE *output_file, FILE *auxiliary_file);
 
 static int number_empty_cells = 0;
+static int fire_spread_interval = 0; // The number of timesteps between consecutive fire spreads.
 
 int main(int argc, char **argv)
 {
@@ -37,6 +39,9 @@ int main(int argc, char **argv)
 
     if(argp_parse(&argp, argc, argv,0,0,&cli_args) != 0)
         return END_PROGRAM;
+
+    fire_spread_interval = 5;
+    // fire_spread_interval = (int) ((CELL_LENGTH / cli_args.spread_rate) / TIMESTEP_TIME);
 
     if(open_auxiliary_file(&auxiliary_file) == FAILURE)
         return END_PROGRAM;
@@ -217,6 +222,8 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
         fill_integer_grid(exits_set.dynamic_floor_field, cli_args.global_line_number, cli_args.global_column_number, 0);
         // Restart the dynamic floor field
 
+        copy_integer_grid(obstacle_grid_aux, obstacle_grid); // Copies the grid before any fire propagation is done
+
         srand(cli_args.seed);
 
         if(origin_uses_static_pedestrians() == false)
@@ -282,8 +289,8 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
                 if(!cli_args.write_to_file)
                     sleep(1);
                    
-                if(number_timesteps == 1 || number_timesteps % 15 == 0 || number_timesteps % 20 == 0) // Temporário    
-                    print_pedestrian_position_grid(output_file, simu_index,number_timesteps);
+                // if(number_timesteps == 1 || number_timesteps % 15 == 0 || number_timesteps % 20 == 0) // Temporário    
+                print_pedestrian_position_grid(output_file, simu_index,number_timesteps);
             }
 
             reset_pedestrian_state();
@@ -292,6 +299,17 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
             // When the particle moves instead of the creation of particles, it generates results closer to the article.
             if(single_diffusion(true) == FAILURE)
                 return FAILURE;
+
+             // The fire doesn't spread in timestep 0, since the timestep variable is incremented before
+            if(number_timesteps % fire_spread_interval == 0)// && cli_args.fire_is_present) 
+            {
+                zheng_fire_propagation();
+                //calculate_fire_floor_field();
+                //determine_risky_cells();
+
+                //check_for_exits_blocked_by_fire();
+                //static_field_calculation(); // Recalculation of the static field.
+            }
 
             if(cli_args.calculate_static_field == calculate_inverted_alizadeh_static_field)
             {
@@ -322,6 +340,7 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
             fprintf(output_file,"%d ", pedestrian_set.traversable_statistics.num_successes);
         }
 
+        copy_integer_grid(obstacle_grid, obstacle_grid_aux); // Restores the grid
 
         fflush(output_file);
 
@@ -374,6 +393,7 @@ static void deallocate_program_structures(FILE *output_file, FILE *auxiliary_fil
     deallocate_exits();
     
     deallocate_grid((void **) obstacle_grid,cli_args.global_line_number);
+    deallocate_grid((void **) obstacle_grid_aux, cli_args.global_line_number);
     deallocate_grid((void **) exits_only_grid,cli_args.global_line_number);
     deallocate_grid((void **) pedestrian_position_grid,cli_args.global_line_number);
     deallocate_grid((void **) heatmap_grid,cli_args.global_line_number);

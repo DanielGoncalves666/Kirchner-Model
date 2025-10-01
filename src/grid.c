@@ -16,14 +16,17 @@
 #include"../headers/shared_resources.h"
 
 Int_Grid obstacle_grid = NULL; // Grid containing walls and obstacles.
-                               // Contains cells with IMPASSABLE_OBJECT, TRAVERSABLE_OBJECT or EMPTY_CELL values.
+                               // Contains cells with IMPASSABLE_OBJECT, TRAVERSABLE_OBJECT, FIRE_CELL or EMPTY_CELL values.
                                // Any cell with an exit is assigned IMPASSABLE_OBJECT value and therefore needs special verification to be identified.
+Int_Grid obstacle_grid_aux = NULL; // Just like the obstacle_grid, but used to hold the original obstacles for simulations with fire. At the end of the simulation, this grid is restored in the obstacle_grid.
 Double_Grid obstacle_traversability_grid = NULL; 
                             // Grid containing values in the range [0, 1] that indicate how easily a pedestrian can traverse each cell.
                             // 0 represents an impassable cell (including exits). 
                             // 0 < x < 1 represents different kinds of passable obstacles
                             // 1 represents maximum ease of traversal. (empty cells)
 Int_Grid heatmap_grid = NULL; // Grid containing the count of pedestrian visits per cell.
+
+Int_Grid adjacent_to_impassable_grid = NULL; // Grid indicating which cells are adjacent to impassable_objects, based on the von Neumann neighborhood (orthogonal neighbors only). 1 for adjacent cells and 0 otherwise.
 
 /**
  * Dynamically allocates an integer matrix of dimensions determined by the function parameters.
@@ -172,6 +175,40 @@ Function_Status fill_double_grid(Double_Grid double_grid, int line_number, int c
 /**
  * Copy the content of the source grid to the destination grid.
  *
+ * @param destination Integer grid where the content is to be copied.
+ * @param source Integer grid to be copied.
+ * @return Function_Status: FAILURE (0) or SUCCESS (1).
+ * 
+ * @note Both grids must be of  global size (lines and columns). Otherwise, undefined behavior will happen.
+ */
+Function_Status copy_integer_grid(Int_Grid destination, Int_Grid source)
+{
+    if(destination == NULL || source == NULL)
+    {
+        fprintf(stderr, "The destination or/and source grids received by 'copy_integer_grid' was a null pointer.\n");
+        return FAILURE;
+    }
+
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        if(destination[i] == NULL || source[i] == NULL)
+        {
+            fprintf(stderr, "The line %d of destination or/and source in 'copy_integer_grid' was a null pointer.\n", i);
+            return FAILURE;
+        }
+
+        for(int h = 0; h < cli_args.global_column_number; h++)
+        {
+            destination[i][h] = source[i][h];
+        }
+    }
+
+    return SUCCESS;
+}
+
+/**
+ * Copy the content of the source grid to the destination grid.
+ *
  * @param destination Double grid where the content is to be copied.
  * @param source Double grid to be copied.
  * @return Function_Status: FAILURE (0) or SUCCESS (1).
@@ -207,7 +244,7 @@ Function_Status copy_double_grid(Double_Grid destination, Double_Grid source)
  * Copy the cells with structures (Walls and obstacles) from the source grid to the destination grid.
  *
  * @param destination Double grid where the content is to be copied.
- * @param source Int grid fro which the data will be extracted.
+ * @param source Int grid from which the data will be extracted.
  * @return Function_Status: FAILURE (0) or SUCCESS (1).
  * 
  * @note Both grids must be of global size (lines and columns). Otherwise, undefined behavior will happen.
@@ -241,6 +278,83 @@ Function_Status copy_grid_structure(Double_Grid destination, Int_Grid source)
 }
 
 /**
+ * Copy the cells that aren't EMPTY_CELL from the source grid to the destination grid.
+ *
+ * @param destination Integer grid where the content is to be copied.
+ * @param source Int grid fro which the data will be extracted.
+ * @return Function_Status: FAILURE (0) or SUCCESS (1).
+ * 
+ * @note Both grids must be of global size (lines and columns). Otherwise, undefined behavior will happen.
+ */
+Function_Status copy_non_empty_cells(Int_Grid destination, Int_Grid source)
+{
+    if(destination == NULL || source == NULL)
+    {
+        fprintf(stderr, "The destination or/and source grids received by 'copy_non_empty_cells' was a null pointer.\n");
+        return FAILURE;
+    }
+
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        if(destination[i] == NULL || source[i] == NULL)
+        {
+            fprintf(stderr, "The line %d of destination or/and source in 'copy_non_empty_cells' was a null pointer.\n", i);
+            return FAILURE;
+        }
+
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            if(source[i][j] == EMPTY_CELL)
+                continue;
+
+            destination[i][j] = source[i][j];
+        }
+    }
+
+    return SUCCESS;
+}
+
+
+/**
+ * Identify the cells that aren't EMPTY_CELL from the source grid and replace the cells in the same coordinates of the destination grid with value.
+ *
+ * @param destination Double grid where the content is to be copied.
+ * @param source Int grid from which the data will be extracted.
+ * @param value The value to be used as replacement.
+ * @return Function_Status: FAILURE (0) or SUCCESS (1).
+ * 
+ * @note Both grids must be of global size (lines and columns). Otherwise, undefined behavior will happen.
+ */
+Function_Status replace_non_empty_cells(Double_Grid destination, Int_Grid source, double value)
+{
+    if(destination == NULL || source == NULL)
+    {
+        fprintf(stderr, "The destination or/and source grids received by 'replace_non_empty_cells' was a null pointer.\n");
+        return FAILURE;
+    }
+
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        if(destination[i] == NULL || source[i] == NULL)
+        {
+            fprintf(stderr, "The line %d of destination or/and source in 'replace_non_empty_cells' was a null pointer.\n", i);
+            return FAILURE;
+        }
+
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            if(source[i][j] == EMPTY_CELL)
+                continue;
+
+            destination[i][j] = value;
+        }
+    }
+
+    return SUCCESS;
+}
+
+
+/**
  * Iterates through each cell in the source grid and adds its value to the corresponding
  * cell in the destination grid. The result is stored in place within the destination grid.
  * 
@@ -252,6 +366,42 @@ Function_Status copy_grid_structure(Double_Grid destination, Int_Grid source)
  * @note Both grids must be of global size (lines and columns). Otherwise, undefined behavior will happen.
  */
 Function_Status sum_grids(Int_Grid destination, Int_Grid source)
+{
+    if(destination == NULL || source == NULL)
+    {
+        fprintf(stderr, "The destination or/and source grids received by 'sum_grids' was a null pointer.\n");
+        return FAILURE;
+    }
+
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        if(destination[i] == NULL || source[i] == NULL)
+        {
+            fprintf(stderr, "The line %d of destination or/and source in 'sum_grids' was a null pointer.\n", i);
+            return FAILURE;
+        }
+
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            destination[i][j] += source[i][j];
+        }
+    }
+
+    return SUCCESS;
+}
+
+/**
+ * Iterates through each cell in the source grid and adds its value to the corresponding
+ * cell in the destination grid. The result is stored in place within the destination grid.
+ * 
+ * @param destination The grid that will be updated with the summed values.
+ * @param second he grid that provides the values to be added to the destination grid.
+ * 
+ * @return Function_Status: FAILURE (0) or SUCCESS (1).
+ * 
+ * @note Both grids must be of global size (lines and columns). Otherwise, undefined behavior will happen.
+ */
+Function_Status sum_double_grids(Double_Grid destination, Double_Grid source)
 {
     if(destination == NULL || source == NULL)
     {

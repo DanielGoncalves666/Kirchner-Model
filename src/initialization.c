@@ -137,12 +137,13 @@ Function_Status open_dynamic_field_output_file(FILE **dynamic_floor_field_file)
 Function_Status allocate_grids()
 {
     obstacle_grid = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
+    obstacle_grid_aux = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
     exits_only_grid = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
     pedestrian_position_grid = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
     heatmap_grid = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
     aux_dynamic_grid = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
     obstacle_traversability_grid = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
-    if(obstacle_grid == NULL || exits_only_grid == NULL || pedestrian_position_grid == NULL || 
+    if(obstacle_grid == NULL || obstacle_grid_aux == NULL || exits_only_grid == NULL || pedestrian_position_grid == NULL || 
        heatmap_grid == NULL    || aux_dynamic_grid == NULL || obstacle_traversability_grid == NULL)
     {
         fprintf(stderr,"Failure during allocation of the integer grids with dimensions: %d x %d.\n", cli_args.global_line_number, cli_args.global_column_number);
@@ -466,6 +467,13 @@ static Function_Status symbol_processing(char read_char, Location coordinates)
             obstacle_grid[coordinates.lin][coordinates.col] = EMPTY_CELL;
             obstacle_traversability_grid[coordinates.lin][coordinates.col] = EMPTY_CELL_TRAVERSABILITY;    
 
+            break;
+        case '*':
+           //initial_fire_grid[coordinates.lin][coordinates.col] = FIRE_CELL;
+            obstacle_grid[coordinates.lin][coordinates.col] = FIRE_CELL;
+            obstacle_traversability_grid[coordinates.lin][coordinates.col] = IMPASSABLE_OBSC_TRAVERSABILITY;
+
+            //cli_args.fire_is_present = true;
             break;
         case '\n':
             break;

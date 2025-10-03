@@ -151,7 +151,7 @@ Function_Status calculate_original_kirchner_static_field(Double_Grid target_grid
     {
         for(int j = 0; j < cli_args.global_column_number; j++)
         {
-            if(target_grid[i][j] == IMPASSABLE_OBJECT)
+            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == FIRE_CELL)
                 continue;
 
             if(target_grid[i][j] == TRAVERSABLE_OBJECT)
@@ -181,7 +181,7 @@ Function_Status calculate_original_kirchner_static_field(Double_Grid target_grid
     {
         for(int j = 0; j < cli_args.global_column_number; j++)
         {
-            if(target_grid[i][j] == IMPASSABLE_OBJECT)
+            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == FIRE_CELL)
                 continue; 
 
             target_grid[i][j] = max_values[0] - euclidean_distance(exit_cell_coordinates[0], (Location) {i,j});
@@ -245,7 +245,7 @@ Function_Status calculate_normalized_original_kirchner_static_field(Double_Grid 
     {
         for(int j = 0; j < cli_args.global_column_number; j++)
         {
-            if(target_grid[i][j] == IMPASSABLE_OBJECT)
+            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == FIRE_CELL)
                 continue;
 
             if(target_grid[i][j] == TRAVERSABLE_OBJECT)
@@ -276,7 +276,7 @@ Function_Status calculate_normalized_original_kirchner_static_field(Double_Grid 
     {
         for(int j = 0; j < cli_args.global_column_number; j++)
         {
-            if(target_grid[i][j] == IMPASSABLE_OBJECT)
+            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == FIRE_CELL)
                 continue; 
 
             target_grid[i][j] = max_values[0] - euclidean_distance(exit_cell_coordinates[0], (Location) {i,j});
@@ -297,7 +297,7 @@ Function_Status calculate_normalized_original_kirchner_static_field(Double_Grid 
     {
         for(int j = 0; j < cli_args.global_column_number; j++)
         {
-            if(target_grid[i][j] == IMPASSABLE_OBJECT)
+            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == FIRE_CELL)
                 continue; 
 
             target_grid[i][j] = max_final_value - target_grid[i][j];
@@ -350,7 +350,7 @@ Function_Status calculate_alternative_kirchner_static_field(Double_Grid target_g
     {
         for(int j = 0; j < cli_args.global_column_number; j++)
         {
-            if(target_grid[i][j] == IMPASSABLE_OBJECT)
+            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == FIRE_CELL)
                 continue;
 
             if(target_grid[i][j] == TRAVERSABLE_OBJECT)
@@ -382,7 +382,7 @@ Function_Status calculate_alternative_kirchner_static_field(Double_Grid target_g
     {
         for(int j = 0; j < cli_args.global_column_number; j++)
         {
-            if(target_grid[i][j] == IMPASSABLE_OBJECT)
+            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == FIRE_CELL)
                 continue; 
 
             double normalized_distance = maximum_value - target_grid[i][j];
@@ -419,7 +419,7 @@ Function_Status calculate_inverted_varas_static_field(Double_Grid target_grid, b
         {
             for(int j = 0; j < cli_args.global_column_number; j++)
             {
-                if(current_exit[i][j] == IMPASSABLE_OBJECT)
+                if(current_exit[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == FIRE_CELL)
                     continue; // Ignore cells with obstacles in the current exit 
 
                 if(target_grid[i][j] == IMPASSABLE_OBJECT)
@@ -474,6 +474,9 @@ Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid
         {
             for(int h = 0; h < cli_args.global_column_number; h++)
             {
+                if(target_grid[i][h] == FIRE_CELL)
+                    continue;
+
                 if(current_exit[i][h] == IMPASSABLE_OBJECT && target_grid[i][h] != IMPASSABLE_OBJECT)
                     continue;
 
@@ -641,7 +644,7 @@ static Function_Status calculate_static_weight(Exit current_exit, int grid_to_ca
             {
                 double current_cell_value = static_weight[i][h];
 
-                if(current_cell_value == IMPASSABLE_OBJECT || current_cell_value == 0.0) // floor field calculations occur only on cells with values
+                if(current_cell_value == IMPASSABLE_OBJECT || current_cell_value == FIRE_CELL || current_cell_value == 0.0) // floor field calculations occur only on cells with values
                     continue;
 
                 for(int j = -1; j < 2; j++)
@@ -654,7 +657,7 @@ static Function_Status calculate_static_weight(Exit current_exit, int grid_to_ca
                         if(! is_within_grid_columns(h + k))
                             continue;
 
-                        if(static_weight[i + j][h + k] == IMPASSABLE_OBJECT || static_weight[i + j][h + k] == EXIT_CELL)
+                        if(static_weight[i + j][h + k] == IMPASSABLE_OBJECT || static_weight[i + j][h + k] == EXIT_CELL || static_weight[i + j][h + k] == FIRE_CELL)
                             continue;
 
                         if(j != 0 && k != 0)
@@ -819,7 +822,7 @@ static Function_Status calculate_all_exits_floor_field(bool traversable_as_impas
 }
 
 /**
- * Copies the structure (obstacles and walls) from the obstacle_grid to the static weight grid 
+ * Copies the structure (obstacles, fires and walls) from the obstacle_grid to the static weight grid 
  * for the provided exit. Additionally, adds the exit cells to it.
  * 
  * @param current_exit The exit for which the static weights will be initialized.
@@ -839,7 +842,9 @@ static void initialize_static_weight_grid(Exit current_exit, int grid_to_calcula
         for(int h = 0; h < cli_args.global_column_number; h++)
         {
             double cell_value = obstacle_grid[i][h];
-            if(cell_value == IMPASSABLE_OBJECT)
+            if(cell_value == FIRE_CELL)
+                static_weight[i][h] = FIRE_CELL;
+            else if(cell_value == IMPASSABLE_OBJECT)
                 static_weight[i][h] = IMPASSABLE_OBJECT;
             else if((traversable_as_impassable || grid_to_calculate == IMPASSABLE_STATIC_WEIGHT) && cell_value == TRAVERSABLE_OBJECT)
                 static_weight[i][h] = IMPASSABLE_OBJECT;
@@ -871,7 +876,7 @@ static void initialize_dynamic_weight_grid(Exit current_exit, bool traversable_a
         for(int h = 0; h < cli_args.global_column_number; h++)
         {
             double cell_value = obstacle_grid[i][h];
-            if(cell_value == IMPASSABLE_OBJECT || (cell_value == TRAVERSABLE_OBJECT && traversable_as_impassable))
+            if(cell_value == IMPASSABLE_OBJECT || (cell_value == TRAVERSABLE_OBJECT && traversable_as_impassable) || cell_value == FIRE_CELL)
                 current_exit->alizadeh_dynamic_weight[i][h] = -1;
             else
                 current_exit->alizadeh_dynamic_weight[i][h] = 0.0;
@@ -901,7 +906,7 @@ static void invert_grid(Double_Grid target_grid){
         for(int j = 0; j < cli_args.global_column_number; j++)
         {
             // TRAVERSABLE_OBJECT check just in case.
-            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == TRAVERSABLE_OBJECT)
+            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == TRAVERSABLE_OBJECT || target_grid[i][j] == FIRE_CELL)
                 continue;
 
             if(target_grid[i][j] > max_value)
@@ -913,7 +918,7 @@ static void invert_grid(Double_Grid target_grid){
     {
         for(int j = 0; j < cli_args.global_column_number; j++)
         {
-            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == TRAVERSABLE_OBJECT)
+            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == TRAVERSABLE_OBJECT || target_grid[i][j] == FIRE_CELL)
                 continue; 
 
             // MAX_VALUE - CELL_VALUE + 1
@@ -955,7 +960,7 @@ static bool is_exit_accessible(Exit current_exit, int grid_to_consider)
                 if(! is_within_grid_columns(c.col + k))
                     continue;
 
-                if(static_weight[c.lin + j][c.col + k] == IMPASSABLE_OBJECT || static_weight[c.lin + j][c.col + k] == EXIT_CELL)
+                if(static_weight[c.lin + j][c.col + k] == IMPASSABLE_OBJECT || static_weight[c.lin + j][c.col + k] == EXIT_CELL || static_weight[c.lin + j][c.col + k] == FIRE_CELL)
                     continue;
 
                 if(j != 0 && k != 0)
@@ -983,7 +988,7 @@ static int identify_occupied_cells(Cell **occupied_cells, Exit current_exit)
 
     for(int p_index = 0; p_index < pedestrian_set.num_pedestrians; p_index++)
     {
-        if(pedestrian_set.list[p_index]->state == GOT_OUT)
+        if(pedestrian_set.list[p_index]->state == GOT_OUT || pedestrian_set.list[p_index]->state == DEAD)
             continue;
 
         *occupied_cells = realloc(*occupied_cells, sizeof(Cell) * (num_occupied_cells + 1));

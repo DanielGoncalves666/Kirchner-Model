@@ -18,6 +18,7 @@ typedef struct{
     Double_Grid static_floor_field;
     Double_Grid impassable_static_floor_field; // Static field considering traversable obstacles as impassable.
     Int_Grid dynamic_floor_field;
+    Double_Grid fire_floor_field;
     Exit *list;
     int num_exits;
 } Exits_Set;

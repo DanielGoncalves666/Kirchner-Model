@@ -254,9 +254,13 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
         if(cli_args.output_format == OUTPUT_VISUALIZATION)
             print_pedestrian_position_grid(output_file, simu_index, 0);
 
+        calculate_distance_to_fire();
+
         int number_timesteps = 0;
         while(is_environment_empty() == false)
         {
+
+
             if(cli_args.show_debug_information)
             {
                 printf("\nTimestep %d.\n", number_timesteps + 1);
@@ -281,17 +285,6 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
             apply_pedestrian_movement();
 
             update_pedestrian_position_grid();
-            
-            number_timesteps++;
-
-            if(cli_args.output_format == OUTPUT_VISUALIZATION)
-            {
-                if(!cli_args.write_to_file)
-                    sleep(1);
-                   
-                // if(number_timesteps == 1 || number_timesteps % 15 == 0 || number_timesteps % 20 == 0) // Temporário    
-                print_pedestrian_position_grid(output_file, simu_index,number_timesteps);
-            }
 
             reset_pedestrian_state();
 
@@ -301,14 +294,37 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
                 return FAILURE;
 
              // The fire doesn't spread in timestep 0, since the timestep variable is incremented before
-            if(number_timesteps % fire_spread_interval == 0)// && cli_args.fire_is_present) 
+            if(number_timesteps % fire_spread_interval == 0 && number_timesteps != 0)// && cli_args.fire_is_present) 
             {
+                print_double_grid(fire_distance_grid);
+
                 zheng_fire_propagation();
+                verify_dead_pedestrians();
                 //calculate_fire_floor_field();
                 //determine_risky_cells();
 
                 //check_for_exits_blocked_by_fire();
                 //static_field_calculation(); // Recalculation of the static field.
+
+                calculate_all_static_weights(cli_args.traversable_as_impassable);
+
+                if(cli_args.calculate_static_field(exits_set.static_floor_field, false) == FAILURE) // Main static field
+                    return FAILURE;
+
+                if(cli_args.calculate_static_field(exits_set.impassable_static_floor_field, true) == FAILURE) // Static field with traversable objects considered as impassable.
+                    return FAILURE;  
+
+            }
+
+            number_timesteps++;
+
+            if(cli_args.output_format == OUTPUT_VISUALIZATION)
+            {
+                if(!cli_args.write_to_file)
+                    sleep(1);
+                   
+                // if(number_timesteps == 1 || number_timesteps % 15 == 0 || number_timesteps % 20 == 0) // Temporário    
+                print_pedestrian_position_grid(output_file, simu_index,number_timesteps);
             }
 
             if(cli_args.calculate_static_field == calculate_inverted_alizadeh_static_field)
@@ -341,10 +357,12 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
         }
 
         copy_integer_grid(obstacle_grid, obstacle_grid_aux); // Restores the grid
+        fill_integer_grid(danger_cell_grid, cli_args.global_line_number, cli_args.global_column_number, 0); // Reset the risky grid
 
         fflush(output_file);
 
         pedestrian_set.traversable_statistics = (Traversable_Statistics) {0,0};
+        pedestrian_set.num_pedestrians_dead = 0;
 
         print_simulation_index(simu_index + 1, cli_args.num_simulations);
     }
@@ -394,9 +412,11 @@ static void deallocate_program_structures(FILE *output_file, FILE *auxiliary_fil
     
     deallocate_grid((void **) obstacle_grid,cli_args.global_line_number);
     deallocate_grid((void **) obstacle_grid_aux, cli_args.global_line_number);
+    deallocate_grid((void **) danger_cell_grid, cli_args.global_line_number);
     deallocate_grid((void **) exits_only_grid,cli_args.global_line_number);
     deallocate_grid((void **) pedestrian_position_grid,cli_args.global_line_number);
     deallocate_grid((void **) heatmap_grid,cli_args.global_line_number);
     deallocate_grid((void **) aux_dynamic_grid, cli_args.global_line_number);
     deallocate_grid((void **) obstacle_traversability_grid, cli_args.global_line_number);
+    deallocate_grid((void **) fire_distance_grid, cli_args.global_line_number);
 }

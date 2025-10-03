@@ -8,7 +8,14 @@
 
 typedef struct cell_conflict * Cell_Conflict;
 
-enum Pedestrian_State {LEAVING, GOT_OUT, STOPPED, CROSSING_FAIL, DEAD, MOVING};
+enum Pedestrian_State {
+    LEAVING, 
+    GOT_OUT, 
+    STOPPED, 
+    CROSSING_FAIL, 
+    DEAD, 
+    MOVING
+};
 
 typedef struct traversable_statistics{
     int num_successes;
@@ -30,6 +37,7 @@ typedef struct pedestrian * Pedestrian;
 typedef struct{
     Pedestrian *list;
     int num_pedestrians;
+    int num_pedestrians_dead;
     Traversable_Statistics traversable_statistics;
 } Pedestrian_Set;
 
@@ -47,6 +55,7 @@ void update_pedestrian_position_grid();
 bool is_environment_empty();
 void reset_pedestrian_state();
 void reset_pedestrians_structures();
+void verify_dead_pedestrians();
 
 extern Int_Grid pedestrian_position_grid;
 extern Pedestrian_Set pedestrian_set;

@@ -17,5 +17,5 @@ dir_name="fire_tests"
 mkdir -p output/$dir_name
 
 print_in_color "\033[0;34m" "Test 1"
-./kirchner.sh -o$dir_name/fire_example_1.txt -m4 -efire_example_1.txt -O1 -s1 --static-field=5
+./kirchner.sh -o$dir_name/fire_example_1.txt -m4 -efire_example_1.txt -O1 -s1 --static-field=5 --print-sff
 

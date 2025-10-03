@@ -138,6 +138,8 @@ Function_Status allocate_grids()
 {
     obstacle_grid = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
     obstacle_grid_aux = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
+    danger_cell_grid = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
+    fire_distance_grid = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
     exits_only_grid = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
     pedestrian_position_grid = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
     heatmap_grid = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);

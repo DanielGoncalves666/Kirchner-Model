@@ -29,7 +29,7 @@ typedef struct cell_conflict{
 }cell_conflict;
 
 Int_Grid pedestrian_position_grid = NULL; // Grid containing pedestrians at their respective positions.
-Pedestrian_Set pedestrian_set = {NULL,0, 0};
+Pedestrian_Set pedestrian_set = {NULL,0, 0, 0};
 
 static Pedestrian create_pedestrian(Location ped_coordinates);
 void calculate_transition_probabilities(Pedestrian current_pedestrian);
@@ -433,7 +433,7 @@ void apply_pedestrian_movement()
         if(current_pedestrian->state != GOT_OUT && !cli_args.velocity_density_field)
             increase_particle_at(current_pedestrian->current); // When the dynamic field is defined as a particle density field, increases the particle count for all cells occupied by pedestrians (not only for those which the pedestrian is moving away).
         
-        if(current_pedestrian->state == GOT_OUT || current_pedestrian->state == STOPPED || current_pedestrian->state == CROSSING_FAIL)
+        if(current_pedestrian->state == GOT_OUT || current_pedestrian->state == STOPPED || current_pedestrian->state == CROSSING_FAIL || current_pedestrian->state == DEAD)
             continue; // Pedestrian is ignored
 
         if(current_pedestrian->state == MOVING)
@@ -477,7 +477,7 @@ bool is_environment_empty()
     for(int p_index = 0; p_index < pedestrian_set.num_pedestrians; p_index++)
     {
         Pedestrian current_pedestrian = pedestrian_set.list[p_index];
-        if(current_pedestrian->state != GOT_OUT)
+        if(current_pedestrian->state != GOT_OUT && current_pedestrian->state != DEAD)
             return false;
     }
 
@@ -495,7 +495,7 @@ void update_pedestrian_position_grid()
     {
         Pedestrian current_pedestrian = pedestrian_set.list[p_index];
 
-        if(current_pedestrian->state == GOT_OUT)
+        if(current_pedestrian->state == GOT_OUT || current_pedestrian->state == DEAD)
             continue;
 
         pedestrian_position_grid[current_pedestrian->current.lin][current_pedestrian->current.col] = current_pedestrian->id;
@@ -504,7 +504,7 @@ void update_pedestrian_position_grid()
 }
 
 /**
- * Reset the state of all pedestrians to MOVING, except for those in the states GOT_OUT and LEAVING.
+ * Reset the state of all pedestrians to MOVING, except for those in the states GOT_OUT, LEAVING and DEAD.
  * Furthermore, subtracts one unit from the pedestrian traversable cooldown.
 */
 void reset_pedestrian_state()
@@ -513,7 +513,7 @@ void reset_pedestrian_state()
     {
         Pedestrian current_pedestrian = pedestrian_set.list[p_index];
 
-        if(current_pedestrian->state != GOT_OUT && current_pedestrian->state != LEAVING){
+        if(current_pedestrian->state != GOT_OUT && current_pedestrian->state != LEAVING && current_pedestrian->state != DEAD){
             current_pedestrian->state = MOVING;
 
             if(current_pedestrian->traversable_cooldown > 0)
@@ -538,6 +538,22 @@ void reset_pedestrians_structures()
         current_pedestrian->state = MOVING;
         current_pedestrian->traversable_cooldown = 0;
         pedestrian_position_grid[current_pedestrian->current.lin][current_pedestrian->current.col] = current_pedestrian->id;
+    }
+}
+
+/**
+ * Verifies if a pedestrian is currently inside a cell with a fire. If so, sets its state to DEAD
+ */
+void verify_dead_pedestrians(){
+    for(int p_index = 0; p_index < pedestrian_set.num_pedestrians; p_index++)
+    {
+        Pedestrian current_pedestrian = pedestrian_set.list[p_index];
+        Location current_location = current_pedestrian->current;
+
+        if(obstacle_grid[current_location.lin][current_location.col] == FIRE_CELL){
+            current_pedestrian->state = DEAD;
+            pedestrian_set.num_pedestrians_dead++;
+        }
     }
 }
 
@@ -613,7 +629,7 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
                     continue;
 
                 if(exits_only_grid[lin + i - 1][col + j - 1] != EXIT_CELL){
-                    if(static_field[lin + i - 1][col + j - 1] == IMPASSABLE_OBJECT)
+                    if(static_field[lin + i - 1][col + j - 1] == IMPASSABLE_OBJECT || static_field[lin + i - 1][col + j - 1] == FIRE_CELL) // A pedestrian will never try to move to a cell with fire
                         continue;// Using static_field instead of obstacle_grid allows to check for the traversable obstacles when the pedestrian is not allowed to go over them.
 
                     if(IS_PEDESTRIAN_CELL(i,j) && is_traversable_obstacle(current_pedestrian->current))

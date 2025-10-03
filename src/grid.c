@@ -19,6 +19,8 @@ Int_Grid obstacle_grid = NULL; // Grid containing walls and obstacles.
                                // Contains cells with IMPASSABLE_OBJECT, TRAVERSABLE_OBJECT, FIRE_CELL or EMPTY_CELL values.
                                // Any cell with an exit is assigned IMPASSABLE_OBJECT value and therefore needs special verification to be identified.
 Int_Grid obstacle_grid_aux = NULL; // Just like the obstacle_grid, but used to hold the original obstacles for simulations with fire. At the end of the simulation, this grid is restored in the obstacle_grid.
+Int_Grid danger_cell_grid = NULL; // Grid contain either EMPTY_CELL, FIRE_CELL or RISKY_CELL (indicates a cell adjacent to a fire)
+Double_Grid fire_distance_grid = NULL; // Grid containing the distance of every cell to the border of the fire.
 Double_Grid obstacle_traversability_grid = NULL; 
                             // Grid containing values in the range [0, 1] that indicate how easily a pedestrian can traverse each cell.
                             // 0 represents an impassable cell (including exits). 
@@ -487,7 +489,7 @@ bool is_within_grid_columns(int column_coordinate)
 
 
 /**
- * Verifies if the cell in the given location is empty (i.e., not occupied by a pedestrian, door, obstacle or wall).
+ * Verifies if the cell in the given location is empty (i.e., not occupied by a pedestrian, door, obstacle, fire or wall).
  * 
  * @param coordinates The coordinates of the cell
  * @return bool, where True indicates that the cell is indeed empty, or False otherwise.
@@ -514,7 +516,7 @@ bool is_cell_empty(Location coordinates)
  */
 bool is_obstacle(Location coordinates)
 {
-    return obstacle_grid[coordinates.lin][coordinates.col] != EMPTY_CELL;
+    return obstacle_grid[coordinates.lin][coordinates.col] != EMPTY_CELL && obstacle_grid[coordinates.lin][coordinates.col] != FIRE_CELL;
 }
 
 /**

@@ -30,6 +30,8 @@ void deallocate_grid(void **grid, int line_number);
 
 extern Int_Grid obstacle_grid;
 extern Int_Grid obstacle_grid_aux;
+extern Int_Grid danger_cell_grid;
+extern Double_Grid fire_distance_grid;
 extern Double_Grid obstacle_traversability_grid;
 extern Int_Grid heatmap_grid;
 

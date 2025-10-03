@@ -5,6 +5,8 @@
 #include"grid.h"
 
 void zheng_fire_propagation();
+void calculate_distance_to_fire();
+
 void determine_risky_cells();
 void calculate_fire_floor_field();
 

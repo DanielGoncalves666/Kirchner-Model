@@ -255,15 +255,15 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
             }
         }
 
-        if(cli_args.output_format == OUTPUT_VISUALIZATION)
-            print_pedestrian_position_grid(output_file, simu_index, 0);
-
         if(fire_spread_interval != -1){
             determine_danger_cells();
             calculate_distance_to_fire();
             calculate_fire_floor_field();
             calculate_distance_to_closest_exit(cli_args.traversable_as_impassable);
         }
+
+        if(cli_args.output_format == OUTPUT_VISUALIZATION)
+            print_pedestrian_position_grid(output_file, simu_index, 0);
 
         int number_timesteps = 0;
         while(is_environment_empty() == false)

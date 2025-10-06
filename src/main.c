@@ -260,7 +260,6 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
 
         if(fire_spread_interval != -1){
             determine_danger_cells();
-            print_int_grid(stdout, danger_cell_grid);
             calculate_distance_to_fire();
             calculate_fire_floor_field();
             calculate_distance_to_closest_exit(cli_args.traversable_as_impassable);
@@ -269,9 +268,6 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
         int number_timesteps = 0;
         while(is_environment_empty() == false)
         {
-            print_double_grid(exits_set.distance_to_exits_grid);
-            print_double_grid(exits_set.static_floor_field);
-
             if(cli_args.show_debug_information)
             {
                 printf("\nTimestep %d.\n", number_timesteps + 1);
@@ -309,7 +305,6 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
             {
                 zheng_fire_propagation();
                 determine_danger_cells();
-                print_int_grid(stdout, danger_cell_grid);
                 calculate_distance_to_fire();
                 calculate_fire_floor_field();
                 verify_dead_pedestrians();

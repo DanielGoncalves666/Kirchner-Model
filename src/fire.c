@@ -13,24 +13,6 @@
 #include"../headers/cli_processing.h"
 #include"../headers/shared_resources.h"
 
-typedef struct{
-    int main_coordinate; // The coordinate that is common to all coordinates in the secondary_coordinates array.
-    int *secondary_coordinates;
-    int length; // number of secondary coordinates
-}coordinate_set;
-
-typedef struct{
-    int length; // number of coordinate sets
-    coordinate_set *sets;
-}coordinate_set_collection;
-
-// static void calculate_distance_from_cells_to_fire();
-// static Function_Status add_to_coordinates_collection(coordinate_set_collection *collection, Location coordinates);
-// static void extract_fire_coordinate_sets(coordinate_set_collection *collection, bool line_direction);
-// static void deallocate_coordinate_sets(coordinate_set_collection collection);
-// static Function_Status determine_adjacent_coordinate_sets(coordinate_set_collection collection, int coordinate, coordinate_set **neighbor_sets, int *num_neighbors);
-// static Function_Status determine_adjacent_secondary_coordinates(coordinate_set *set, int coordinate, int *neighbor_coordinates, int *num_neighbors);
-
 /**
  * Propagate the fire in the environment, in accordance with the Zheng's 2011 article.
  * 

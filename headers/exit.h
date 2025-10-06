@@ -11,6 +11,7 @@ struct exit {
     Double_Grid impassable_static_weight;
     Double_Grid alizadeh_dynamic_weight;
     Double_Grid floor_field; // Temporarily holds the Alizadeh field for a given combination of the alizadeh_dynamic_weight with one of the static_weight grids.
+    bool is_exit_blocked;
 };
 typedef struct exit * Exit;
 
@@ -19,6 +20,7 @@ typedef struct{
     Double_Grid impassable_static_floor_field; // Static field considering traversable obstacles as impassable.
     Int_Grid dynamic_floor_field;
     Double_Grid fire_floor_field;
+    Double_Grid distance_to_exits_grid;
     Exit *list;
     int num_exits;
 } Exits_Set;
@@ -31,7 +33,8 @@ Function_Status calculate_normalized_original_kirchner_static_field(Double_Grid 
 Function_Status calculate_alternative_kirchner_static_field(Double_Grid target_grid, bool traversable_as_impassable);
 Function_Status calculate_inverted_varas_static_field(Double_Grid target_grid, bool traversable_as_impassable);
 Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid, bool traversable_as_impassable);
-Function_Status calculate_all_static_weights(bool traversable_as_impassable);
+Function_Status calculate_all_static_weights(bool traversable_as_impassable, bool allow_inaccessible_exits);
+void calculate_distance_to_closest_exit(bool traversable_as_impassable);
 void deallocate_exits();
 
 extern Int_Grid exits_only_grid;

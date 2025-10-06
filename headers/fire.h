@@ -6,13 +6,8 @@
 
 void zheng_fire_propagation();
 void calculate_distance_to_fire();
-
-void determine_risky_cells();
 void calculate_fire_floor_field();
+void determine_danger_cells();
 
-extern Double_Grid fire_distance_grid;
-extern Int_Grid fire_grid;
-extern Int_Grid initial_fire_grid;
-extern Int_Grid risky_cells_grid;
 
 #endif

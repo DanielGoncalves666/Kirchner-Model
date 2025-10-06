@@ -96,8 +96,18 @@ void print_pedestrian_position_grid(FILE *output_stream, int simulation_number, 
 					else
 						fprintf(output_stream,"⏹️");
 				}
-				else if(pedestrian_position_grid[i][j] == 0)
-					fprintf(output_stream,"⬜");
+				else if(pedestrian_position_grid[i][j] == 0){
+					if(obstacle_grid[i][j] == IMPASSABLE_OBJECT)
+						fprintf(output_stream,"🟧");
+					else if(obstacle_grid[i][j] == TRAVERSABLE_OBJECT && obstacle_traversability_grid[i][j] == cli_args.traversability_value){
+						if(cli_args.traversable_as_impassable)
+							fprintf(output_stream,"🟧");
+						else
+							fprintf(output_stream,"⏹️");
+					}else{
+						fprintf(output_stream,"⬜");
+					}
+				}
 			}
 			fprintf(output_stream,"\n");
 		}

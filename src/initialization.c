@@ -471,11 +471,10 @@ static Function_Status symbol_processing(char read_char, Location coordinates)
 
             break;
         case '*':
-           //initial_fire_grid[coordinates.lin][coordinates.col] = FIRE_CELL;
             obstacle_grid[coordinates.lin][coordinates.col] = FIRE_CELL;
             obstacle_traversability_grid[coordinates.lin][coordinates.col] = IMPASSABLE_OBSC_TRAVERSABILITY;
 
-            //cli_args.fire_is_present = true;
+            cli_args.fire_is_present = true;
             break;
         case '\n':
             break;

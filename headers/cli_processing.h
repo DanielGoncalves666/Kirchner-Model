@@ -32,6 +32,7 @@ typedef struct{
     bool ignore_latest_self_trace;
     bool skip_new_particles_decay;
     bool traversable_as_impassable; // Indicates if the traversable objects should be considered as impassable.
+    bool fire_is_present; // Used to indicate that fires are present in the simulation environment.
     int traversable_cooldown;
     double traversability_value;
     int global_line_number;
@@ -43,12 +44,17 @@ typedef struct{
     double alizadeh_alpha;
     double alpha;
     double delta;
+    double fire_alpha;
+    double fire_gamma;
     double ks;
     double kd;
+    double kf;
     double density;
     double min;
     double max;
     double step;
+    double spread_rate;
+    double risk_distance;
 } Command_Line_Args;
 
 error_t parser_function(int key, char *arg, struct argp_state *state);

@@ -31,8 +31,6 @@ typedef struct{
 // static Function_Status determine_adjacent_coordinate_sets(coordinate_set_collection collection, int coordinate, coordinate_set **neighbor_sets, int *num_neighbors);
 // static Function_Status determine_adjacent_secondary_coordinates(coordinate_set *set, int coordinate, int *neighbor_coordinates, int *num_neighbors);
 
-static void determine_danger_cells();
-
 /**
  * Propagate the fire in the environment, in accordance with the Zheng's 2011 article.
  * 
@@ -58,7 +56,6 @@ void zheng_fire_propagation()
 
                 if(moore_neighbor_modifiers[mm].lin != 0 && moore_neighbor_modifiers[mm].col != 0){
                     if(!is_diagonal_valid((Location){i,j}, moore_neighbor_modifiers[mm], exits_set.static_floor_field)){
-                        printf("aqi");
                         continue;
                     }
                 }
@@ -73,9 +70,6 @@ void zheng_fire_propagation()
     
     copy_integer_grid(obstacle_grid, aux_grid);
     deallocate_grid((void **) aux_grid, cli_args.global_line_number);
-
-    determine_danger_cells();
-    calculate_distance_to_fire();
 }
 
 /**
@@ -84,9 +78,9 @@ void zheng_fire_propagation()
 void calculate_distance_to_fire(){
 
     double floor_field_rule[][3] = 
-            {{cli_args.diagonal,    1.0,    cli_args.diagonal},
-             {       1.0,           0.0,           1.0       },
-             {cli_args.diagonal,    1.0,    cli_args.diagonal}};
+            {{1.0, 1.0, 1.0},
+             {1.0, 1.0, 1.0},
+             {1.0, 1.0, 1.0}};
 
 
     for(int i = 0; i < cli_args.global_line_number; i++){
@@ -174,50 +168,43 @@ void calculate_distance_to_fire(){
 /**
  * Calculates the fire floor field in accordance with the 2011 Zheng's article specifications.
  */
-// void calculate_fire_floor_field()
-// {
-//     fill_double_grid(exits_set.fire_floor_field, cli_args.global_line_number, cli_args.global_column_number, 0);
+void calculate_fire_floor_field()
+{
+    fill_double_grid(exits_set.fire_floor_field, cli_args.global_line_number, cli_args.global_column_number, 0);
 
-//     calculate_distance_from_cells_to_fire();
+    double sum_of_all_distances = 0;
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            if(obstacle_grid[i][j] == IMPASSABLE_OBJECT || obstacle_grid[i][j] == FIRE_CELL)
+                continue;
 
-//     if(! cli_args.fire_is_present)
-//         return; // If there is no fire, the fire floor field value is set to zero for all cells. When the pedestrian probability formula is applied, the denominator will default to 1.
+            exits_set.fire_floor_field[i][j] = 1.0 / fire_distance_grid[i][j];
+            sum_of_all_distances += exits_set.fire_floor_field[i][j];
+        }
+    }
 
-//     double sum_of_all_distances = 0;
-//     for(int i = 0; i < cli_args.global_line_number; i++)
-//     {
-//         for(int j = 0; j < cli_args.global_column_number; j++)
-//         {
-//             if(fire_distance_grid[i][j] > cli_args.fire_gamma || fire_grid[i][j] == FIRE_CELL)
-//                 continue; // Too far away from the fire, so the FF field value will be 0
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            if(obstacle_grid[i][j] == IMPASSABLE_OBJECT || obstacle_grid[i][j] == FIRE_CELL)
+                continue;
 
-//             if(obstacle_grid[i][j] != EMPTY_CELL)
-//                 continue; // It's an obstacle or exit.
-
-//             exits_set.fire_floor_field[i][j] = 1.0 / fire_distance_grid[i][j];
-//             sum_of_all_distances += exits_set.fire_floor_field[i][j];
-//         }
-//     }
-
-//     for(int i = 0; i < cli_args.global_line_number; i++)
-//     {
-//         for(int j = 0; j < cli_args.global_column_number; j++)
-//         {
-//             if(exits_set.fire_floor_field[i][j] != 0)
-//                 exits_set.fire_floor_field[i][j] /= sum_of_all_distances;
-//                 //exits_set.fire_floor_field[i][j] /=  45.848087;
-//         }
-//     }
-// }
-
-/* ---------------- ---------------- ---------------- ---------------- ---------------- */
-/* ---------------- ---------------- STATIC FUNCTIONS ---------------- ---------------- */
-/* ---------------- ---------------- ---------------- ---------------- ---------------- */
+            if(fire_distance_grid[i][j] > cli_args.fire_gamma){
+                exits_set.fire_floor_field[i][j] = 0;
+            }
+            else
+                exits_set.fire_floor_field[i][j] /= sum_of_all_distances;        
+        }
+    }
+}
 
 /**
- * Determines the dangerous cells in the environment, i.e., cells that are adjacent to fire cells.
+ * Determines the dangerous cells in the environment, i.e., cells that are adjacent to fire cells, and risky cells, i.e., dangerous cells that are adjacent to an impassable obstacle.
  */
-static void determine_danger_cells(){
+void determine_danger_cells(){
     
     fill_integer_grid(danger_cell_grid, cli_args.global_line_number, cli_args.global_column_number, EMPTY_CELL);
     
@@ -233,6 +220,21 @@ static void determine_danger_cells(){
                         if(obstacle_grid[i + h][j + k] != FIRE_CELL && obstacle_grid[i + h][j + k] != IMPASSABLE_OBJECT){
                             danger_cell_grid[i][j] = DANGER_CELL;
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    for(int i = 0; i < cli_args.global_line_number; i++)
+    {
+        for(int j = 0; j < cli_args.global_column_number; j++)
+        {
+            if(danger_cell_grid[i][j] == DANGER_CELL){
+                for(int h = -1; h < 2; h++){
+                    for(int k = -1; k < 2; k++){
+                        if(obstacle_grid[i + h][j + k] == IMPASSABLE_OBJECT) // If there is an impassable obstacle in the Moore vicinity of the danger cell, then it is considered a risky cell.
+                            danger_cell_grid[i][j] == RISKY_CELL;
                     }
                 }
             }

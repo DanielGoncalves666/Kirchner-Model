@@ -89,6 +89,11 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 #define OPT_TRAVERSABILITY 3003
 #define OPT_PRINT_STATIC_FLOOR_FIELD 4001
 #define OPT_PRINT_DYNAMIC_FLOOR_FIELD 4002
+#define OPT_FIRE_COUPLING 5000
+#define OPT_RISK_DISTANCE 5001
+#define OPT_FIRE_ALPHA 5002
+#define OPT_FIRE_GAMMA 5003
+#define OPT_FIRE_SPREAD_RATE 5004
 
 struct argp_option options[] = {
     {"\nFiles:\n",0,0,OPTION_DOC,0,1},
@@ -130,6 +135,13 @@ struct argp_option options[] = {
     {"ignore-self-trace", OPT_IGNORE_SELF_TRACE, 0, 0, "When calculating transition probabilities for a pedestrian, ignores the most recent particle deposited by that pedestrian."},
     {"skip-new-particles-decay", OPT_SKIP_NEW_PARTICLES_DECAY, 0, 0, "Don't apply decay for newly created dynamic particles."},
     {"allow-diagonal-movements", OPT_ALLOW_DIAGONAL_MOVEMENTS, 0, 0, "Allows pedestrian to move to its diagonal neighbors. By default they only move horizontally and vertically."},
+    
+    {"\nZheng model constants and options:\n",0,0,OPTION_DOC,0, 13},
+    {"kf", OPT_FIRE_COUPLING, "KF", 0, "The fire field coupling constant is one of the parameters used to adjust the strength of the fire floor field. Defaults to 1.", 14},
+    {"risk-distance", OPT_RISK_DISTANCE, "RISK", 0, "The maximum distance (exclusive) within which a pedestrian near an exit is willing to take more risks to attempt to leave the environment. In fact, what happens is that the second parameter used to adjust the strength of the fire floor field will be FIRE-ALPHA. Defaults to 6."},
+    {"fire-alpha", OPT_FIRE_ALPHA, "FIRE-ALPHA", 0, "The value of the second parameter to adjust the strength of the fire floor field. If a pedestrian is closer than RISK, then this value is used in the calculation of the transition probabilities (instead of 1). This has the effect that the pedestrians are more willing to pass closer to a fire if that means they can exit the environment. Defaults to 0.5."},
+    {"fire-gamma", OPT_FIRE_GAMMA, "FIRE-GAMMA", 0, "A constant used in the calculation of the fire floor field. If the distance from a cell to a cell with fire is greater than FIRE_GAMMA, the fire floor field (FF) value of that cell will be 0. Otherwise, the value will be equal to or greater than 0. The default value of FIRE_GAMMA is 8."},
+    {"spread-rate", OPT_FIRE_SPREAD_RATE, "RATE", 0, "The velocity, in meters per second, that the fire spreads in the environment. Defaults to 0.1 m/s."},
     
     {"\nRange values for simulation focused on a constant:\n",0,0,OPTION_DOC,0, 13},
     {"min", OPT_MIN_SIMULATION_VALUE, "MIN", 0, "The minimum value that the variable constant will assume. Defaults to 0.", 14},
@@ -174,6 +186,7 @@ Command_Line_Args cli_args = {
     .ignore_latest_self_trace = false,
     .skip_new_particles_decay = false,
     .traversable_as_impassable = false,
+    .fire_is_present = false,
     .traversable_cooldown = 5,
     .traversability_value = 0.6,
     .global_line_number = 0,
@@ -185,12 +198,17 @@ Command_Line_Args cli_args = {
     .alizadeh_alpha = 1.0,
     .alpha=0.5,
     .delta=0.5,
+    .fire_alpha=0.5,
+    .fire_gamma=8,
     .ks=1,
     .kd=1,
+    .kf=1,
     .density=0.3,
     .min=0,
     .max=1,
-    .step=0.01
+    .step=0.01,
+    .spread_rate=0.1,
+    .risk_distance=6
 };
 // When loading an environment global_line_number and global_column_number will no be obtained from the command line arguments. Besides, total_num_pedestrians will be automatic determined by the program on some environment origin formats.
 
@@ -403,6 +421,45 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
             }
 
             break;
+        case OPT_FIRE_COUPLING:
+            cli_args->kf = atof(arg);
+
+            if(cli_args->kf < 0)
+            {
+                fprintf(stderr, "The fire coupling constant must be a non-negative number.\n");
+                return EIO;
+            }
+
+            break;
+        case OPT_FIRE_ALPHA:
+            cli_args->fire_alpha = atof(arg);
+            
+            if(cli_args->fire_alpha < 0 || cli_args->fire_alpha > 1)
+            {
+                fprintf(stderr, "The fire alpha constant must be in the [0,1] range.\n");
+                return EIO;
+            }
+            break;
+        case OPT_RISK_DISTANCE:
+            cli_args->risk_distance = atof(arg);
+
+            if(cli_args->risk_distance < 0)
+            {
+                fprintf(stderr, "The risk distance must be a non-negative number.\n");
+                return EIO;
+            }
+
+            break;
+        case OPT_FIRE_GAMMA:
+            cli_args->fire_gamma = atof(arg);
+
+            if(cli_args->fire_gamma < 0)
+            {
+                fprintf(stderr, "The fire gamma constant must be a non-negative number.\n");
+                return EIO;
+            }
+            
+            break;
         case OPT_MIN_SIMULATION_VALUE:
             cli_args->min = atof(arg);
             break;
@@ -612,6 +669,21 @@ void extract_full_command(char *full_command, int key, char *arg)
             break;
         case OPT_DYNAMIC_COUPLING:
             sprintf(aux, " --kd=%s", arg);
+            break;
+        case OPT_FIRE_COUPLING:
+            sprintf(aux, " --kf=%s", arg);
+            break;
+        case OPT_FIRE_ALPHA:
+            sprintf(aux, " --fire-alpha=%s",arg);
+            break;
+        case OPT_FIRE_GAMMA:
+            sprintf(aux, " --fire-gamma=%s", arg);
+            break;
+        case OPT_RISK_DISTANCE:
+            sprintf(aux, " --risk-distance=%s",arg);
+            break;
+        case OPT_FIRE_SPREAD_RATE:
+            sprintf(aux, " --spread-rate=%s",arg);
             break;
         case OPT_MIN_SIMULATION_VALUE:
             sprintf(aux, " --min=%s", arg);

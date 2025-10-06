@@ -34,6 +34,7 @@ static Function_Status calculate_all_exits_floor_field(bool traversable_as_impas
 static void invert_grid(Double_Grid target_grid);
 static bool is_exit_accessible(Exit current_exit, int grid_to_consider);
 static int identify_occupied_cells(Cell **occupied_cells, Exit current_exit);
+static Exit get_first_non_blocked_exit(int *index);
 
 /**
  * Adds a new exit to the exits set.
@@ -97,9 +98,11 @@ Function_Status allocate_exits_set_fields()
     exits_set.static_floor_field = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
     exits_set.impassable_static_floor_field = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
     exits_set.dynamic_floor_field = allocate_integer_grid(cli_args.global_line_number, cli_args.global_column_number);
-    if(exits_set.static_floor_field == NULL || exits_set.impassable_static_floor_field == NULL || exits_set.dynamic_floor_field == NULL)
+    exits_set.fire_floor_field = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
+    exits_set.distance_to_exits_grid = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
+    if(exits_set.static_floor_field == NULL || exits_set.impassable_static_floor_field == NULL || exits_set.dynamic_floor_field == NULL || exits_set.fire_floor_field == NULL)
     {
-        fprintf(stderr,"Failure during the allocation of the static_floor_field and dynamic_floor_field.\n");
+        fprintf(stderr,"Failure during the allocation of the static_floor_field, dynamic_floor_field or fire_floor_field.\n");
         return FAILURE;
     }
 
@@ -464,10 +467,16 @@ Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid
     if( calculate_all_exits_floor_field(traversable_as_impassable) == FAILURE) // Alizadeh floor field calculation
         return FAILURE;
         
-    Double_Grid current_exit = exits_set.list[0]->floor_field;
+    int non_blocked_index = 0;
+    Exit first_non_blocked_exit = get_first_non_blocked_exit(&non_blocked_index);
+
+    if(first_non_blocked_exit == NULL)
+        return SUCCESS;
+
+    Double_Grid current_exit = first_non_blocked_exit->floor_field; // TODO: chamar essa função nos outros cálculos.
     copy_double_grid(target_grid, current_exit); // uses the first exit as the base for the merging
     
-    for(int exit_index = 1; exit_index < exits_set.num_exits; exit_index++)
+    for(int exit_index = non_blocked_index + 1; exit_index < exits_set.num_exits; exit_index++)
     {
         current_exit = exits_set.list[exit_index]->floor_field;;
         for(int i = 0; i < cli_args.global_line_number; i++)
@@ -492,11 +501,6 @@ Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid
         }
     }
 
-    //if(cli_args.print_static_floor_field){
-    //    printf("Original Alizadeh Static Floor Field (before inversion):\n");
-    //    print_double_grid(target_grid);
-    //}
-
     invert_grid(target_grid);
 
     return SUCCESS;
@@ -506,10 +510,11 @@ Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid
  * Calculates the static weights (both) of every exit in the exits_set.
  * 
  * @param traversable_as_impassable A boolean, indicating if the traversable obstacles in the environment should be considered as impassable (True) or not (False).
+ * @param allow_inaccessible_exits A boolean, indicating that inaccessible exits are allowed.
  * 
  * @return Function_Status: FAILURE (0), SUCCESS (1) or INACCESSIBLE_EXIT(2).
 */
-Function_Status calculate_all_static_weights(bool traversable_as_impassable)
+Function_Status calculate_all_static_weights(bool traversable_as_impassable, bool allow_inaccessible_exits)
 {
     if(exits_set.num_exits <= 0 || exits_set.list == NULL)
     {
@@ -523,16 +528,66 @@ Function_Status calculate_all_static_weights(bool traversable_as_impassable)
     {
         // normal static_weight
         returned_status = calculate_static_weight(exits_set.list[exit_index], NORMAL_STATIC_WEIGHT, traversable_as_impassable); 
-        if(returned_status != SUCCESS )
+        if(allow_inaccessible_exits && returned_status == INACCESSIBLE_EXIT)
+        {
+            exits_set.list[exit_index]->is_exit_blocked = true;
+        }
+        else if(returned_status != SUCCESS){
             return returned_status;
+        }
 
         // impassable_static_weight
         returned_status = calculate_static_weight(exits_set.list[exit_index], IMPASSABLE_STATIC_WEIGHT, traversable_as_impassable); 
-        if(returned_status != SUCCESS )
+        if(returned_status != SUCCESS && !(allow_inaccessible_exits && returned_status == INACCESSIBLE_EXIT))
             return returned_status;
     }
 
     return SUCCESS;
+}
+
+/**
+ * Computes the distance from each cell to the nearest exit cell, storing the information in the distance_to_exits_grid.
+ * 
+ * @param traversable_as_impassable A boolean, indicating if the traversable obstacles in the environment should be considered as impassable (True) or not (False).
+ */
+void calculate_distance_to_closest_exit(bool traversable_as_impassable)
+{
+    int non_blocked_index = 0;
+    Exit first_non_blocked_exit = get_first_non_blocked_exit(&non_blocked_index);
+    if(first_non_blocked_exit == NULL)
+        return;
+
+    Double_Grid current_exit = traversable_as_impassable ? first_non_blocked_exit->impassable_static_weight : first_non_blocked_exit->static_weight;
+    copy_double_grid(exits_set.distance_to_exits_grid, current_exit); // uses the first exit as the base for the merging
+    
+    for(int exit_index = non_blocked_index + 1; exit_index < exits_set.num_exits; exit_index++)
+    {
+        current_exit = traversable_as_impassable ? exits_set.list[exit_index]->impassable_static_weight : exits_set.list[exit_index]->static_weight;
+        for(int i = 0; i < cli_args.global_line_number; i++)
+        {
+            for(int j = 0; j < cli_args.global_column_number; j++)
+            {
+                if(current_exit[i][j] == IMPASSABLE_OBJECT || exits_set.distance_to_exits_grid[i][j] == FIRE_CELL)
+                    continue; // Ignore cells with obstacles in the current exit 
+
+                if(exits_set.distance_to_exits_grid[i][j] == IMPASSABLE_OBJECT)
+                    exits_set.distance_to_exits_grid[i][j] = current_exit[i][j];
+                    // Cell was an obstacle in the first door, but an exit on another.
+
+                if(current_exit[i][j] < exits_set.distance_to_exits_grid[i][j])
+                    exits_set.distance_to_exits_grid[i][j] = current_exit[i][j];
+            }
+        }
+    }
+
+    for(int i = 0; i < cli_args.global_line_number; i++){
+        for(int j = 0; j < cli_args.global_column_number; j++){
+            if(exits_set.distance_to_exits_grid[i][j] == IMPASSABLE_OBJECT || exits_set.distance_to_exits_grid[i][j] == FIRE_CELL)
+                continue;
+
+            exits_set.distance_to_exits_grid[i][j] -= 1;
+        }
+    }
 }
 
 /**
@@ -555,9 +610,12 @@ void deallocate_exits()
     deallocate_grid((void **) exits_set.static_floor_field, cli_args.global_line_number);
     deallocate_grid((void **) exits_set.impassable_static_floor_field, cli_args.global_line_number);
     deallocate_grid((void **) exits_set.dynamic_floor_field, cli_args.global_line_number);
+    deallocate_grid((void **) exits_set.fire_floor_field, cli_args.global_line_number);
+    deallocate_grid((void **) exits_set.distance_to_exits_grid, cli_args.global_line_number);
     exits_set.static_floor_field = NULL;
     exits_set.impassable_static_floor_field = NULL;
     exits_set.dynamic_floor_field = NULL;
+    exits_set.fire_floor_field = NULL;
 
     exits_set.num_exits = 0;
 }
@@ -585,6 +643,7 @@ static Exit create_new_exit(Location exit_coordinates)
             
             new_exit->coordinates[0] = exit_coordinates;
             new_exit->width = 1;
+            new_exit->is_exit_blocked = false;
 
             new_exit->static_weight = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
             new_exit->impassable_static_weight = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
@@ -960,7 +1019,7 @@ static bool is_exit_accessible(Exit current_exit, int grid_to_consider)
                 if(! is_within_grid_columns(c.col + k))
                     continue;
 
-                if(static_weight[c.lin + j][c.col + k] == IMPASSABLE_OBJECT || static_weight[c.lin + j][c.col + k] == EXIT_CELL || static_weight[c.lin + j][c.col + k] == FIRE_CELL)
+                if(obstacle_grid[c.lin + j][c.col + k] == IMPASSABLE_OBJECT || obstacle_grid[c.lin + j][c.col + k] == FIRE_CELL)
                     continue;
 
                 if(j != 0 && k != 0)
@@ -1007,4 +1066,18 @@ static int identify_occupied_cells(Cell **occupied_cells, Exit current_exit)
     }
 
     return num_occupied_cells;
+}
+
+static Exit get_first_non_blocked_exit(int *index){
+    Exit current_exit;
+
+    for(int exit_index = 0; exit_index < exits_set.num_exits; exit_index++)
+    {
+        if(!exits_set.list[exit_index]->is_exit_blocked){
+            *index = exit_index;
+            return exits_set.list[exit_index];
+        }
+    }
+
+    return NULL;
 }

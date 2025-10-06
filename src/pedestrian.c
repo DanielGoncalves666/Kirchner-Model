@@ -597,6 +597,7 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
     int col = current_pedestrian->current.col;
 
     Double_Grid static_field = NULL;
+    double alpha;
 
     if(cli_args.traversable_as_impassable || current_pedestrian->traversable_cooldown > 0)
         static_field = exits_set.impassable_static_floor_field;
@@ -617,7 +618,8 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
             if(i == 1 || j == 1 || cli_args.allow_diagonal_movements)
             {
                 if(! is_within_grid_lines(lin + (i - 1)) || 
-                   ! is_within_grid_columns(col + (j - 1)))
+                   ! is_within_grid_columns(col + (j - 1)) ||
+                    danger_cell_grid[lin + i - 1][col + j - 1] == DANGER_CELL)
                     continue;
 
                 if(IS_DIAGONAL_CELL(i,j) && is_diagonal_valid(current_pedestrian->current,(Location){i - 1,j - 1}, exits_set.impassable_static_floor_field) == false)
@@ -639,9 +641,19 @@ void calculate_transition_probabilities(Pedestrian current_pedestrian)
                 }
                 else
                     non_exponential_value[i][j] = 1; // Exit
+
+
+                alpha = 1;
+                if( exits_set.distance_to_exits_grid[lin + i - 1][col + j - 1] < cli_args.risk_distance)
+                    alpha = cli_args.fire_alpha;
                   
                 int dynamic_floor_field_value = get_dynamic_floor_field_value(current_pedestrian, (Location) {i, j});
-                exp_exponent[i][j] = cli_args.ks * static_field[lin + i - 1][col + j - 1] + cli_args.kd * dynamic_floor_field_value;
+                exp_exponent[i][j] =  cli_args.ks * static_field[lin + i - 1][col + j - 1] 
+                                    + cli_args.kd * dynamic_floor_field_value;
+
+                if(cli_args.fire_is_present && danger_cell_grid[lin + i - 1][col + j - 1] != RISKY_CELL){ // For risky cells the calculation is done using the original formula
+                    exp_exponent[i][j] -= cli_args.kf * alpha * exits_set.fire_floor_field[lin + i -1][col + j - 1];
+                }
 
                 if(exp_exponent[i][j] > biggest_exp_exponent){
                     biggest_exp_exponent = exp_exponent[i][j];

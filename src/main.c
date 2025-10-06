@@ -40,8 +40,7 @@ int main(int argc, char **argv)
     if(argp_parse(&argp, argc, argv,0,0,&cli_args) != 0)
         return END_PROGRAM;
 
-    fire_spread_interval = 5;
-    // fire_spread_interval = (int) ((CELL_LENGTH / cli_args.spread_rate) / TIMESTEP_TIME);
+    fire_spread_interval = (int) ((CELL_LENGTH / cli_args.spread_rate) / TIMESTEP_TIME);
 
     if(open_auxiliary_file(&auxiliary_file) == FAILURE)
         return END_PROGRAM;
@@ -76,6 +75,11 @@ int main(int argc, char **argv)
     }
     number_empty_cells = count_number_empty_cells();
 
+    if(! cli_args.fire_is_present){
+        fire_spread_interval = -1;
+    }
+
+
     if(auxiliary_file != NULL)
     {
         simulation_set_quantity = extract_simulation_set_quantity(auxiliary_file);
@@ -97,7 +101,7 @@ int main(int argc, char **argv)
         if(cli_args.show_simulation_set_info)
             print_simulation_set_information(output_file);
 
-        int returned_value = calculate_all_static_weights(cli_args.traversable_as_impassable);
+        int returned_value = calculate_all_static_weights(cli_args.traversable_as_impassable, false);
         if( returned_value == FAILURE) 
             return END_PROGRAM;
         else if(returned_value == INACCESSIBLE_EXIT)
@@ -254,12 +258,18 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
         if(cli_args.output_format == OUTPUT_VISUALIZATION)
             print_pedestrian_position_grid(output_file, simu_index, 0);
 
-        calculate_distance_to_fire();
+        if(fire_spread_interval != -1){
+            determine_danger_cells();
+            calculate_distance_to_fire();
+            calculate_fire_floor_field();
+            calculate_distance_to_closest_exit(cli_args.traversable_as_impassable);
+        }
 
         int number_timesteps = 0;
         while(is_environment_empty() == false)
         {
-
+            print_double_grid(exits_set.distance_to_exits_grid);
+            print_double_grid(exits_set.static_floor_field);
 
             if(cli_args.show_debug_information)
             {
@@ -294,26 +304,24 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
                 return FAILURE;
 
              // The fire doesn't spread in timestep 0, since the timestep variable is incremented before
-            if(number_timesteps % fire_spread_interval == 0 && number_timesteps != 0)// && cli_args.fire_is_present) 
+            if(fire_spread_interval != -1 && number_timesteps % fire_spread_interval == 0 && number_timesteps != 0)
             {
-                print_double_grid(fire_distance_grid);
-
                 zheng_fire_propagation();
+                determine_danger_cells();
+                calculate_distance_to_fire();
+                calculate_fire_floor_field();
                 verify_dead_pedestrians();
-                //calculate_fire_floor_field();
-                //determine_risky_cells();
 
-                //check_for_exits_blocked_by_fire();
-                //static_field_calculation(); // Recalculation of the static field.
+                calculate_all_static_weights(cli_args.traversable_as_impassable, true);
+                calculate_distance_to_closest_exit(cli_args.traversable_as_impassable);
 
-                calculate_all_static_weights(cli_args.traversable_as_impassable);
-
-                if(cli_args.calculate_static_field(exits_set.static_floor_field, false) == FAILURE) // Main static field
-                    return FAILURE;
-
-                if(cli_args.calculate_static_field(exits_set.impassable_static_floor_field, true) == FAILURE) // Static field with traversable objects considered as impassable.
-                    return FAILURE;  
-
+                if(cli_args.calculate_static_field == calculate_inverted_alizadeh_static_field){
+                    if(cli_args.calculate_static_field(exits_set.static_floor_field, false) == FAILURE) // Main static field
+                        return FAILURE;
+    
+                    if(cli_args.calculate_static_field(exits_set.impassable_static_floor_field, true) == FAILURE) // Static field with traversable objects considered as impassable.
+                        return FAILURE;  
+                }
             }
 
             number_timesteps++;

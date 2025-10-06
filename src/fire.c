@@ -218,7 +218,7 @@ void determine_danger_cells(){
                 for(int h = -1; h < 2; h++){
                     for(int k = -1; k < 2; k++){
                         if(obstacle_grid[i + h][j + k] != FIRE_CELL && obstacle_grid[i + h][j + k] != IMPASSABLE_OBJECT){
-                            danger_cell_grid[i][j] = DANGER_CELL;
+                            danger_cell_grid[i + h][j + k] = DANGER_CELL;
                         }
                     }
                 }
@@ -234,7 +234,7 @@ void determine_danger_cells(){
                 for(int h = -1; h < 2; h++){
                     for(int k = -1; k < 2; k++){
                         if(obstacle_grid[i + h][j + k] == IMPASSABLE_OBJECT) // If there is an impassable obstacle in the Moore vicinity of the danger cell, then it is considered a risky cell.
-                            danger_cell_grid[i][j] == RISKY_CELL;
+                            danger_cell_grid[i][j] = RISKY_CELL;
                     }
                 }
             }

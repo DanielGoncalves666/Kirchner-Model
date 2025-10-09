@@ -149,8 +149,10 @@ void calculate_distance_to_fire(){
 
 /**
  * Calculates the fire floor field in accordance with the 2011 Zheng's article specifications.
+ * 
+ * @param numerator_only Indicates if the fire floor field should be calculated considering only the numerator of Zheng's equation.
  */
-void calculate_fire_floor_field()
+void calculate_fire_floor_field(bool numerator_only)
 {
     fill_double_grid(exits_set.fire_floor_field, cli_args.global_line_number, cli_args.global_column_number, 0);
 
@@ -177,11 +179,12 @@ void calculate_fire_floor_field()
             if(fire_distance_grid[i][j] > cli_args.fire_gamma){
                 exits_set.fire_floor_field[i][j] = 0;
             }
-            else
+            else if(!numerator_only)
                 exits_set.fire_floor_field[i][j] /= sum_of_all_distances;        
         }
     }
 }
+
 
 /**
  * Determines the dangerous cells in the environment, i.e., cells that are adjacent to fire cells, and risky cells, i.e., dangerous cells that are adjacent to an impassable obstacle.

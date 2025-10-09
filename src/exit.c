@@ -34,7 +34,7 @@ static Function_Status calculate_all_exits_floor_field(bool traversable_as_impas
 static void invert_grid(Double_Grid target_grid);
 static bool is_exit_accessible(Exit current_exit, int grid_to_consider);
 static int identify_occupied_cells(Cell **occupied_cells, Exit current_exit);
-static Exit get_first_non_blocked_exit(int *index);
+static Exit get_first_non_blocked_exit(int *index, bool normal);
 
 /**
  * Adds a new exit to the exits set.
@@ -468,7 +468,7 @@ Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid
         return FAILURE;
         
     int non_blocked_index = 0;
-    Exit first_non_blocked_exit = get_first_non_blocked_exit(&non_blocked_index);
+    Exit first_non_blocked_exit = get_first_non_blocked_exit(&non_blocked_index, !traversable_as_impassable);
 
     if(first_non_blocked_exit == NULL)
         return SUCCESS;
@@ -495,7 +495,11 @@ Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid
                     continue;
                 }
 
-                if(target_grid[i][h] > current_exit[i][h])
+                if(current_exit[i][h] == -1)
+                    continue;
+                else if(target_grid[i][h] == -1)
+                    target_grid[i][h] = current_exit[i][h];
+                else if(target_grid[i][h] > current_exit[i][h])
                     target_grid[i][h] = current_exit[i][h];
             }
         }
@@ -530,7 +534,7 @@ Function_Status calculate_all_static_weights(bool traversable_as_impassable, boo
         returned_status = calculate_static_weight(exits_set.list[exit_index], NORMAL_STATIC_WEIGHT, traversable_as_impassable); 
         if(allow_inaccessible_exits && returned_status == INACCESSIBLE_EXIT)
         {
-            exits_set.list[exit_index]->is_exit_blocked = true;
+            exits_set.list[exit_index]->is_exit_blocked_normal = true;
         }
         else if(returned_status != SUCCESS){
             return returned_status;
@@ -538,8 +542,13 @@ Function_Status calculate_all_static_weights(bool traversable_as_impassable, boo
 
         // impassable_static_weight
         returned_status = calculate_static_weight(exits_set.list[exit_index], IMPASSABLE_STATIC_WEIGHT, traversable_as_impassable); 
-        if(returned_status != SUCCESS && !(allow_inaccessible_exits && returned_status == INACCESSIBLE_EXIT))
+        if(allow_inaccessible_exits && returned_status == INACCESSIBLE_EXIT)
+        {
+            exits_set.list[exit_index]->is_exit_blocked_impassable = true;
+        }
+        else if(returned_status != SUCCESS){
             return returned_status;
+        }
     }
 
     return SUCCESS;
@@ -553,7 +562,7 @@ Function_Status calculate_all_static_weights(bool traversable_as_impassable, boo
 void calculate_distance_to_closest_exit(bool traversable_as_impassable)
 {
     int non_blocked_index = 0;
-    Exit first_non_blocked_exit = get_first_non_blocked_exit(&non_blocked_index);
+    Exit first_non_blocked_exit = get_first_non_blocked_exit(&non_blocked_index, !traversable_as_impassable);
     if(first_non_blocked_exit == NULL)
         return;
 
@@ -563,6 +572,7 @@ void calculate_distance_to_closest_exit(bool traversable_as_impassable)
     for(int exit_index = non_blocked_index + 1; exit_index < exits_set.num_exits; exit_index++)
     {
         current_exit = traversable_as_impassable ? exits_set.list[exit_index]->impassable_static_weight : exits_set.list[exit_index]->static_weight;
+
         for(int i = 0; i < cli_args.global_line_number; i++)
         {
             for(int j = 0; j < cli_args.global_column_number; j++)
@@ -643,7 +653,8 @@ static Exit create_new_exit(Location exit_coordinates)
             
             new_exit->coordinates[0] = exit_coordinates;
             new_exit->width = 1;
-            new_exit->is_exit_blocked = false;
+            new_exit->is_exit_blocked_normal = false;
+            new_exit->is_exit_blocked_impassable = false;
 
             new_exit->static_weight = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
             new_exit->impassable_static_weight = allocate_double_grid(cli_args.global_line_number, cli_args.global_column_number);
@@ -703,7 +714,7 @@ static Function_Status calculate_static_weight(Exit current_exit, int grid_to_ca
             {
                 double current_cell_value = static_weight[i][h];
 
-                if(current_cell_value == IMPASSABLE_OBJECT || current_cell_value == FIRE_CELL || current_cell_value == 0.0) // floor field calculations occur only on cells with values
+                if(current_cell_value == IMPASSABLE_OBJECT || current_cell_value == FIRE_CELL || current_cell_value == -1.0) // floor field calculations occur only on cells with values
                     continue;
 
                 for(int j = -1; j < 2; j++)
@@ -726,7 +737,7 @@ static Function_Status calculate_static_weight(Exit current_exit, int grid_to_ca
                         }
 
                         double adjacent_cell_value = current_cell_value + floor_field_rule[1 + j][1 + k];
-                        if(auxiliary_grid[i + j][h + k] == 0.0)
+                        if(auxiliary_grid[i + j][h + k] == -1.0)
                         {    
                             auxiliary_grid[i + j][h + k] = adjacent_cell_value;
                             has_changed = true;
@@ -822,7 +833,9 @@ static Function_Status calculate_exit_floor_field(Exit current_exit, bool traver
     {
         for(int h = 0; h < cli_args.global_column_number; h++)
         {
-            if(current_exit->alizadeh_dynamic_weight[i][h] == -1) // Cells with no dynamic weight (obstacles and walls).
+            if(static_weight[i][h] == -1)
+                current_exit->floor_field[i][h] = -1;
+            else if(current_exit->alizadeh_dynamic_weight[i][h] == -1) // Cells with no dynamic weight (obstacles and walls).
                 current_exit->floor_field[i][h] = static_weight[i][h];
             else
                 current_exit->floor_field[i][h] = static_weight[i][h] + cli_args.alizadeh_alpha * current_exit->alizadeh_dynamic_weight[i][h];
@@ -908,7 +921,7 @@ static void initialize_static_weight_grid(Exit current_exit, int grid_to_calcula
             else if((traversable_as_impassable || grid_to_calculate == IMPASSABLE_STATIC_WEIGHT) && cell_value == TRAVERSABLE_OBJECT)
                 static_weight[i][h] = IMPASSABLE_OBJECT;
             else
-                static_weight[i][h] = 0.0; // Traversable objects are ignored for the calculation of the static field (if they aren't considered as IMPASSABLE).
+                static_weight[i][h] = -1.0; // Traversable objects are ignored for the calculation of the static field (if they aren't considered as IMPASSABLE).
         }
     }
 
@@ -977,7 +990,7 @@ static void invert_grid(Double_Grid target_grid){
     {
         for(int j = 0; j < cli_args.global_column_number; j++)
         {
-            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == TRAVERSABLE_OBJECT || target_grid[i][j] == FIRE_CELL)
+            if(target_grid[i][j] == IMPASSABLE_OBJECT || target_grid[i][j] == TRAVERSABLE_OBJECT || target_grid[i][j] == FIRE_CELL || target_grid[i][j] == -1)
                 continue; 
 
             // MAX_VALUE - CELL_VALUE + 1
@@ -1068,14 +1081,22 @@ static int identify_occupied_cells(Cell **occupied_cells, Exit current_exit)
     return num_occupied_cells;
 }
 
-static Exit get_first_non_blocked_exit(int *index){
+static Exit get_first_non_blocked_exit(int *index, bool normal){
     Exit current_exit;
 
     for(int exit_index = 0; exit_index < exits_set.num_exits; exit_index++)
     {
-        if(!exits_set.list[exit_index]->is_exit_blocked){
-            *index = exit_index;
-            return exits_set.list[exit_index];
+        if(normal){
+            if(!exits_set.list[exit_index]->is_exit_blocked_normal){
+                *index = exit_index;
+                return exits_set.list[exit_index];
+            }
+        }   
+        else{
+            if(!exits_set.list[exit_index]->is_exit_blocked_impassable){
+                *index = exit_index;
+                return exits_set.list[exit_index];
+            }
         }
     }
 

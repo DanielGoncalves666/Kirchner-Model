@@ -212,6 +212,8 @@ int main(int argc, char **argv)
     return END_PROGRAM;
 }
 
+#define NUMERATOR_ONLY false
+
 /**
  * Runs all the simulations for a specific simulation set, printing generated data if appropriate.
  * 
@@ -258,7 +260,7 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
         if(fire_spread_interval != -1){
             determine_danger_cells();
             calculate_distance_to_fire();
-            calculate_fire_floor_field();
+            calculate_fire_floor_field(NUMERATOR_ONLY);
             calculate_distance_to_closest_exit(cli_args.traversable_as_impassable);
         }
 
@@ -306,13 +308,13 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
                 zheng_fire_propagation();
                 determine_danger_cells();
                 calculate_distance_to_fire();
-                calculate_fire_floor_field();
+                calculate_fire_floor_field(NUMERATOR_ONLY);
                 verify_dead_pedestrians();
 
                 calculate_all_static_weights(cli_args.traversable_as_impassable, true);
                 calculate_distance_to_closest_exit(cli_args.traversable_as_impassable);
 
-                if(cli_args.calculate_static_field == calculate_inverted_alizadeh_static_field){
+                if(cli_args.calculate_static_field != calculate_inverted_alizadeh_static_field){
                     if(cli_args.calculate_static_field(exits_set.static_floor_field, false) == FAILURE) // Main static field
                         return FAILURE;
     

@@ -1,0 +1,26 @@
+25 39
+#######################################
+#....................p...p.......p....#
+#......p....mmmmmm...mmmmmm..........p#
+#....................................p#
+#..ppp..ppppp.ppppp.pppp..pppppppp....#
+#..mmmmmmmmmmmmmmmm.mmmmmmmmmmmmmmmm..#
+#..pppppp..ppppp.pp.pp..ppppppp..ppp..#
+#..mmmmmmmmmmmmmmmm.mmmmmmmmmmmmmmmm.p#
+#..ppp...ppppppp.pp.p..pppppp..ppp....#
+#..mmmmmmmmmmmmmmmm.mmmmmmmmmmmmmmmm.p#
+#..pppp.....ppppppp.pppp.........ppp..#
+#..mmmmmmmmmmmmmmmm.mmmmmmmmmmmmmmmm..#
+#..ppppp..ppppppppp*ppp.ppp.p....ppp..#
+#..mmmmmmmmmmmmmmmm.mmmmmmmmmmmmmmmm..#
+#..p.p................pppppppp..pppp..#
+#..mmmmmmmmmmmmmmmm.mmmmmmmmmmmmmmmm..#
+#..pp......p...pppp.pppp.pppppppppp...#
+#..mmmmmmmmmmmmmmmm.mmmmmmmmmmmmmmmm..#
+#..ppppp....ppppppp.ppp...pppp.ppppp..#
+#..mmmmmmmmmmmmmmmm.mmmmmmmmmmmmmmmm..#
+#..p..pp..###################.........#
+#...............mm.#p..............pp.#
+#......p.......p...#mm................#
+#.........#........#.....p..#.........#
+###############__#####__###############

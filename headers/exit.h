@@ -11,7 +11,8 @@ struct exit {
     Double_Grid impassable_static_weight;
     Double_Grid alizadeh_dynamic_weight;
     Double_Grid floor_field; // Temporarily holds the Alizadeh field for a given combination of the alizadeh_dynamic_weight with one of the static_weight grids.
-    bool is_exit_blocked;
+    bool is_exit_blocked_normal;
+    bool is_exit_blocked_impassable;
 };
 typedef struct exit * Exit;
 

@@ -6,8 +6,7 @@
 
 void zheng_fire_propagation();
 void calculate_distance_to_fire();
-void calculate_fire_floor_field();
+void calculate_fire_floor_field(bool numerator_only);
 void determine_danger_cells();
-
 
 #endif

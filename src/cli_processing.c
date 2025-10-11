@@ -94,6 +94,7 @@ const char doc[] = "kirchner - Simulates pedestrian evacuation using the Kirchne
 #define OPT_FIRE_ALPHA 5002
 #define OPT_FIRE_GAMMA 5003
 #define OPT_FIRE_SPREAD_RATE 5004
+#define OPT_FIRE_DEACTIVATED 5005
 
 struct argp_option options[] = {
     {"\nFiles:\n",0,0,OPTION_DOC,0,1},
@@ -142,6 +143,7 @@ struct argp_option options[] = {
     {"fire-alpha", OPT_FIRE_ALPHA, "FIRE-ALPHA", 0, "The value of the second parameter to adjust the strength of the fire floor field. If a pedestrian is closer than RISK, then this value is used in the calculation of the transition probabilities (instead of 1). This has the effect that the pedestrians are more willing to pass closer to a fire if that means they can exit the environment. Defaults to 0.5."},
     {"fire-gamma", OPT_FIRE_GAMMA, "FIRE-GAMMA", 0, "A constant used in the calculation of the fire floor field. If the distance from a cell to a cell with fire is greater than FIRE_GAMMA, the fire floor field (FF) value of that cell will be 0. Otherwise, the value will be equal to or greater than 0. The default value of FIRE_GAMMA is 8."},
     {"spread-rate", OPT_FIRE_SPREAD_RATE, "RATE", 0, "The velocity, in meters per second, that the fire spreads in the environment. Defaults to 0.1 m/s."},
+    {"no-fire", OPT_FIRE_DEACTIVATED, 0, 0, "Deactivates the fire, replacing them with empty cells."},
     
     {"\nRange values for simulation focused on a constant:\n",0,0,OPTION_DOC,0, 13},
     {"min", OPT_MIN_SIMULATION_VALUE, "MIN", 0, "The minimum value that the variable constant will assume. Defaults to 0.", 14},
@@ -187,6 +189,7 @@ Command_Line_Args cli_args = {
     .skip_new_particles_decay = false,
     .traversable_as_impassable = false,
     .fire_is_present = false,
+    .fire_deactivated = false,
     .traversable_cooldown = 5,
     .traversability_value = 0.6,
     .global_line_number = 0,
@@ -460,6 +463,9 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
             }
             
             break;
+        case OPT_FIRE_DEACTIVATED:
+            cli_args->fire_deactivated = true;
+            break;
         case OPT_MIN_SIMULATION_VALUE:
             cli_args->min = atof(arg);
             break;
@@ -684,6 +690,9 @@ void extract_full_command(char *full_command, int key, char *arg)
             break;
         case OPT_FIRE_SPREAD_RATE:
             sprintf(aux, " --spread-rate=%s",arg);
+            break;
+        case OPT_FIRE_DEACTIVATED:
+            sprintf(aux, " --no-fire");
             break;
         case OPT_MIN_SIMULATION_VALUE:
             sprintf(aux, " --min=%s", arg);

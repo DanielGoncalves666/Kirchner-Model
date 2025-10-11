@@ -33,6 +33,7 @@ typedef struct{
     bool skip_new_particles_decay;
     bool traversable_as_impassable; // Indicates if the traversable objects should be considered as impassable.
     bool fire_is_present; // Used to indicate that fires are present in the simulation environment.
+    bool fire_deactivated;
     int traversable_cooldown;
     double traversability_value;
     int global_line_number;

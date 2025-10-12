@@ -17,12 +17,66 @@ RUN_COMMAND="./build/kirchner.exe"
 dir_name="tcc-fire-experiments"
 mkdir -p output/$dir_name
 
-for ambient in "daniel_anfiteatro_fogo_centro" "daniel_anfiteatro_fogo_superior" "daniel_anfiteatro_fogo_porta_esquerda" "daniel_anfiteatro_fogo_duas_portas" "daniel_anfiteatro_fogo_centro_inferior"; do
+SIMU=100
+OUT=2
+
+# for ambient in "daniel_anfiteatro_fogo_centro" "daniel_anfiteatro_fogo_superior" "daniel_anfiteatro_fogo_porta_esquerda" "daniel_anfiteatro_fogo_duas_portas" "daniel_anfiteatro_fogo_centro_inferior"; do
+#     print_in_color "\033[0;34m" "Fire Experiment - $ambient"
+#     $RUN_COMMAND -o$dir_name/fire_experiment_$ambient.txt -m4 -e$ambient.txt -O$OUT -s$SIMU --static-field=5 --ks=2 --kd=1 --delta=0.3 --alpha=0.3 --ignore-self-trace  --skip-new-particles-decay --allow-diagonal-movements --cooldown=5 --traversability=0.5 --spread-rate=0.1 --min=0 --max=10000 --step=10  &
+# done
+
+# print_in_color "\033[0;34m" "Fire Experiment - daniel_anfiteatro - Sem fogo"
+# $RUN_COMMAND -o$dir_name/fire_experiment_daniel_anfiteatro_no_fire.txt -m4 -edaniel_anfiteatro.txt -O$OUT -s$SIMU --static-field=5 --kf=500 --ks=2 --kd=1 --delta=0.3 --alpha=0.3 --ignore-self-trace  --skip-new-particles-decay --allow-diagonal-movements --cooldown=5 --traversability=0.5 --no-fire &
+
+# wait
+
+# for ambient in "silva_laboratory_fogo_corredor_centro" "silva_laboratory_fogo_corredor_direita" "silva_laboratory_fogo_corredor_esquerda" "silva_laboratory_fogo_fileiras_centro" "silva_laboratory_fogo_fileiras_esquerda" "silva_laboratory_fogo_meio"; do
+#     print_in_color "\033[0;34m" "Fire Experiment - $ambient"
+#     $RUN_COMMAND -o$dir_name/fire_experiment_$ambient.txt -m4 -e$ambient.txt -O$OUT -s$SIMU --static-field=5 --ks=2 --kd=1 --delta=0.3 --alpha=0.3 --ignore-self-trace  --skip-new-particles-decay --allow-diagonal-movements --cooldown=5 --traversability=0.5 --spread-rate=0.1 --min=0 --max=10000 --step=10  &
+# done
+
+# print_in_color "\033[0;34m" "Fire Experiment - silva_laboratory - Sem fogo"
+# $RUN_COMMAND -o$dir_name/fire_experiment_silva_laboratory_no_fire.txt -m4 -esilva_laboratory.txt -O$OUT -s$SIMU --static-field=5 --kf=500 --ks=2 --kd=1 --delta=0.3 --alpha=0.3 --ignore-self-trace  --skip-new-particles-decay --allow-diagonal-movements --cooldown=5 --traversability=0.5 --no-fire &
+
+# wait
+
+# for ambient in "silva_laboratory_fogo_corredor_centro" "silva_laboratory_fogo_corredor_direita" "silva_laboratory_fogo_corredor_esquerda" "silva_laboratory_fogo_fileiras_centro" "silva_laboratory_fogo_fileiras_esquerda" "silva_laboratory_fogo_meio"; do
+#     print_in_color "\033[0;34m" "Fire Experiment - $ambient"
+#     $RUN_COMMAND -o$dir_name/fire_experiment_2_$ambient.txt -m4 -e$ambient.txt -O$OUT -s$SIMU --static-field=5 --ks=2 --kd=1 --delta=0.3 --alpha=0.3 --ignore-self-trace  --skip-new-particles-decay --allow-diagonal-movements --cooldown=5 --traversability=0.5 --spread-rate=0.1 --min=0 --max=100 --step=1  &
+# done
+
+# print_in_color "\033[0;34m" "Fire Experiment - silva_laboratory - Sem fogo"
+# $RUN_COMMAND -o$dir_name/fire_experiment_silva_laboratory_no_fire.txt -m4 -esilva_laboratory.txt -O$OUT -s$SIMU --static-field=5 --kf=500 --ks=2 --kd=1 --delta=0.3 --alpha=0.3 --ignore-self-trace  --skip-new-particles-decay --allow-diagonal-movements --cooldown=5 --traversability=0.5 --no-fire &
+
+# wait
+
+SIMU=100
+OUT=6
+
+# for ambient in "daniel_anfiteatro_fogo_centro" "daniel_anfiteatro_fogo_superior" "daniel_anfiteatro_fogo_porta_esquerda" "daniel_anfiteatro_fogo_duas_portas" "daniel_anfiteatro_fogo_centro_inferior"; do
+#     print_in_color "\033[0;34m" "Fire Experiment - $ambient"
+#     $RUN_COMMAND -o$dir_name/fire_experiment_dead_$ambient.txt -m4 -e$ambient.txt -O$OUT -s$SIMU --static-field=5 --kf=500 --ks=2 --kd=1 --delta=0.3 --alpha=0.3 --ignore-self-trace  --skip-new-particles-decay --allow-diagonal-movements --cooldown=5 --traversability=0.5 --spread-rate=0.5 &
+# done
+
+# print_in_color "\033[0;34m" "Fire Experiment - daniel_anfiteatro - Sem fogo"
+# $RUN_COMMAND -o$dir_name/fire_experiment_dead_daniel_anfiteatro_no_fire.txt -m4 -edaniel_anfiteatro.txt -O$OUT -s$SIMU --static-field=5 --kf=500 --ks=2 --kd=1 --delta=0.3 --alpha=0.3 --ignore-self-trace  --skip-new-particles-decay --allow-diagonal-movements --cooldown=5 --traversability=0.5 --no-fire &
+
+# wait
+
+for ambient in "silva_laboratory_fogo_corredor_centro" "silva_laboratory_fogo_corredor_direita" "silva_laboratory_fogo_corredor_esquerda" "silva_laboratory_fogo_fileiras_centro" "silva_laboratory_fogo_fileiras_esquerda" "silva_laboratory_fogo_meio"; do
     print_in_color "\033[0;34m" "Fire Experiment - $ambient"
-    $RUN_COMMAND -o$dir_name/fire_experiment_$ambient.txt -m4 -e$ambient.txt -O1 -s1 --static-field=5 --kf=500 --ks=2 --kd=1 --delta=0.3 --alpha=0.3 --ignore-self-trace  --skip-new-particles-decay --allow-diagonal-movements --cooldown=5 --traversability=0.5
+    $RUN_COMMAND -o$dir_name/fire_experiment_dead_$ambient.txt -m4 -e$ambient.txt -O$OUT -s$SIMU --static-field=5 --kf=500 --ks=2 --kd=1 --delta=0.3 --alpha=0.3 --ignore-self-trace  --skip-new-particles-decay --allow-diagonal-movements --cooldown=5 --traversability=0.5 --spread-rate=0.1 &
 done
 
-print_in_color "\033[0;34m" "Fire Experiment - daniel_anfiteatro - Sem fogo"
-$RUN_COMMAND -o$dir_name/fire_experiment_daniel_anfiteatro_no_fire.txt -m4 -edaniel_anfiteatro.txt -O1 -s1 --static-field=5 --kf=500 --ks=2 --kd=1 --delta=0.3 --alpha=0.3 --ignore-self-trace  --skip-new-particles-decay --allow-diagonal-movements --cooldown=5 --traversability=0.5 --no-fire
+wait
+
+
+SIMU=96
+OUT=1
+
+for ambient in "silva_laboratory_fogo_corredor_direita"; do
+    print_in_color "\033[0;34m" "Fire Experiment - $ambient"
+    $RUN_COMMAND -o$dir_name/fire_experiment_dead_mov_$ambient.txt -m4 -e$ambient.txt -O$OUT -s$SIMU --static-field=5 --kf=500 --ks=2 --kd=1 --delta=0.3 --alpha=0.3 --ignore-self-trace  --skip-new-particles-decay --allow-diagonal-movements --cooldown=5 --traversability=0.5 --spread-rate=0.1 > teste.txt
+done
 
 wait

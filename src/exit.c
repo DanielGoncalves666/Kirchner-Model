@@ -601,6 +601,18 @@ void calculate_distance_to_closest_exit(bool traversable_as_impassable)
 }
 
 /**
+ * Resets the flags that indicate an exit is blocked.
+ */
+void reset_exits(){
+    for(int exit_index = 0; exit_index < exits_set.num_exits; exit_index++) 
+    {
+        Exit current_exit = exits_set.list[exit_index];
+        current_exit->is_exit_blocked_normal = false;
+        current_exit->is_exit_blocked_impassable = false;
+    }
+}
+
+/**
  * Deallocate and reset the structures related to each exit and the exists set.
 */
 void deallocate_exits()

@@ -246,7 +246,7 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
             break;
         case 'O':
             int output_format = atoi(arg);
-            if(output_format < OUTPUT_VISUALIZATION || output_format > OUTPUT_TRAVERSABLE_SUCCESSES)
+            if(output_format < OUTPUT_VISUALIZATION || output_format > OUTPUT_DEAD_PEDESTRIANS)
             {
                 fprintf(stderr, "Invalid output format.\n");
                 return EIO;
@@ -427,10 +427,10 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
         case OPT_FIRE_COUPLING:
             cli_args->kf = atof(arg);
 
-            if(cli_args->kf < 0)
+            if((kirchner_constants & 32U) == 0)
             {
-                fprintf(stderr, "The fire coupling constant must be a non-negative number.\n");
-                return EIO;
+                num_constants++;
+                kirchner_constants ^= 32U;
             }
 
             break;
@@ -462,6 +462,9 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
                 return EIO;
             }
             
+            break;
+        case OPT_FIRE_SPREAD_RATE:
+            cli_args->spread_rate = atof(arg);
             break;
         case OPT_FIRE_DEACTIVATED:
             cli_args->fire_deactivated = true;
@@ -581,11 +584,11 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
                 }
             }
 
-            if(num_constants == 4)
+            if(num_constants == 5)
             {
-                for(int shift = 0; shift < 5; shift++)
+                for(int shift = 0; shift < 6; shift++)
                 {
-                    if( (kirchner_constants & (16U >> shift)) == 0 )
+                    if( (kirchner_constants & (32U >> shift)) == 0 )
                     {
                         cli_args->simulation_type = (enum Simulation_Type) shift;
                         break;
@@ -759,6 +762,8 @@ double *obtain_varying_constant()
             return &(cli_args.ks);
         case SIMULATION_DYNAMIC_COUPLING:
             return &(cli_args.kd);
+        case SIMULATION_FIRE_COUPLING:
+            return &(cli_args.kf);
         case SIMULATION_DOOR_LOCATION_ONLY:
         default:
             return NULL;

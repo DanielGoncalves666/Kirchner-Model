@@ -9,6 +9,7 @@ enum Simulation_Type {
     SIMULATION_DELTA,
     SIMULATION_STATIC_COUPLING,
     SIMULATION_DYNAMIC_COUPLING,
+    SIMULATION_FIRE_COUPLING,
     SIMULATION_DOOR_LOCATION_ONLY
 };
 // All simulation types support the variation of door location.
@@ -19,6 +20,7 @@ enum Output_Format {
     OUTPUT_HEATMAP,
     OUTPUT_TRAVERSABLE_FAILS,
     OUTPUT_TRAVERSABLE_SUCCESSES,
+    OUTPUT_DEAD_PEDESTRIANS
 };
 
 enum Environment_Origin {

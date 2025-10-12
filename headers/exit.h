@@ -36,6 +36,7 @@ Function_Status calculate_inverted_varas_static_field(Double_Grid target_grid, b
 Function_Status calculate_inverted_alizadeh_static_field(Double_Grid target_grid, bool traversable_as_impassable);
 Function_Status calculate_all_static_weights(bool traversable_as_impassable, bool allow_inaccessible_exits);
 void calculate_distance_to_closest_exit(bool traversable_as_impassable);
+void reset_exits();
 void deallocate_exits();
 
 extern Int_Grid exits_only_grid;

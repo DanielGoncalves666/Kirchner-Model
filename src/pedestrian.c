@@ -550,6 +550,9 @@ void verify_dead_pedestrians(){
         Pedestrian current_pedestrian = pedestrian_set.list[p_index];
         Location current_location = current_pedestrian->current;
 
+        if(current_pedestrian->state == DEAD || current_pedestrian->state == GOT_OUT)
+            continue;
+
         if(obstacle_grid[current_location.lin][current_location.col] == FIRE_CELL){
             current_pedestrian->state = DEAD;
             pedestrian_set.num_pedestrians_dead++;

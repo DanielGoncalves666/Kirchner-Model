@@ -338,7 +338,6 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
             {
                 if(cli_args.calculate_static_field(exits_set.static_floor_field, false) == FAILURE) // Main static field
                     return FAILURE;
-    
                 if(cli_args.calculate_static_field(exits_set.impassable_static_floor_field, true) == FAILURE) // Static field with traversable objects considered as impassable.
                     return FAILURE;  
 
@@ -349,6 +348,8 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
                 }
             }
         }
+
+        reset_exits();
 
         if(origin_uses_static_pedestrians() == true)
             reset_pedestrians_structures();
@@ -361,11 +362,24 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
             fprintf(output_file,"%d ", pedestrian_set.traversable_statistics.num_fails);
         }else if(cli_args.output_format == OUTPUT_TRAVERSABLE_SUCCESSES){
             fprintf(output_file,"%d ", pedestrian_set.traversable_statistics.num_successes);
+        }else if(cli_args.output_format == OUTPUT_DEAD_PEDESTRIANS){
+            fprintf(output_file, "%d ", pedestrian_set.num_pedestrians_dead);
         }
 
         copy_integer_grid(obstacle_grid, obstacle_grid_aux); // Restores the grid
         fill_integer_grid(danger_cell_grid, cli_args.global_line_number, cli_args.global_column_number, 0); // Reset the risky grid
 
+        if(fire_spread_interval != -1){
+            calculate_all_static_weights(cli_args.traversable_as_impassable, true);
+
+             //Temporary solution
+            if(cli_args.calculate_static_field(exits_set.static_floor_field, false) == FAILURE) // Main static field
+                return FAILURE;
+
+            if(cli_args.calculate_static_field(exits_set.impassable_static_floor_field, true) == FAILURE) // Static field with traversable objects considered as impassable.
+                return FAILURE;  
+        }
+       
         fflush(output_file);
 
         pedestrian_set.traversable_statistics = (Traversable_Statistics) {0,0};

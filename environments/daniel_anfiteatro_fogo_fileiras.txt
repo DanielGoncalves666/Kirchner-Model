@@ -10,7 +10,7 @@
 #..ppp...ppppppp.pp.p..pppppp..ppp....#
 #..mmmmmmmmmmmmmmmm.mmmmmmmmmmmmmmmm.p#
 #..pppp.....ppppppp.pppp.........ppp..#
-#..mmmmmmmmmmmmmmmm.mmmmmmmmmmmmmmmm..#
+#..mmmmmm*mmmmmmmmm.mmmmmmmmmmmmmmmm..#
 #..ppppp..ppppppppp.ppp.ppp.p....ppp..#
 #..mmmmmmmmmmmmmmmm.mmmmmmmmmmmmmmmm..#
 #..p.p................pppppppp..pppp..#
@@ -22,5 +22,5 @@
 #..p..pp..###################.........#
 #...............mm.#p..............pp.#
 #......p.......p...#mm................#
-#*........#........#.....p..#........*#
+#.........#........#.....p..#.........#
 ###############__#####__###############

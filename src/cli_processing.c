@@ -246,7 +246,7 @@ error_t parser_function(int key, char *arg, struct argp_state *state)
             break;
         case 'O':
             int output_format = atoi(arg);
-            if(output_format < OUTPUT_VISUALIZATION || output_format > OUTPUT_DEAD_PEDESTRIANS)
+            if(output_format < OUTPUT_VISUALIZATION || output_format > OUTPUT_DEAD_BY_TIMESTEP)
             {
                 fprintf(stderr, "Invalid output format.\n");
                 return EIO;

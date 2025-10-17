@@ -181,7 +181,7 @@ int main(int argc, char **argv)
                 if(run_simulations(output_file, dynamic_floor_field_file) == FAILURE) // The simulations actually happen here.
                     return END_PROGRAM;
 
-                if(cli_args.output_format == OUTPUT_TIMESTEPS_COUNT || cli_args.output_format == OUTPUT_TRAVERSABLE_FAILS || cli_args.output_format == OUTPUT_TRAVERSABLE_SUCCESSES)
+                if(cli_args.output_format != OUTPUT_HEATMAP && cli_args.output_format != OUTPUT_VISUALIZATION)
                     fprintf(output_file, "\n");
 
                 print_varying_execution_status(*varying_constant, cli_args.max);
@@ -347,6 +347,13 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
                     print_double_grid(exits_set.impassable_static_floor_field);
                 }
             }
+
+            if(cli_args.output_format == OUTPUT_PEDESTRIANS_BY_TIMESTEP){
+                fprintf(output_file,"%d\n", count_pedestrians());
+            }
+            else if(cli_args.output_format == OUTPUT_DEAD_BY_TIMESTEP){
+                fprintf(output_file,"%d\n", pedestrian_set.num_pedestrians_dead);
+            }
         }
 
         reset_exits();
@@ -363,7 +370,7 @@ static Function_Status run_simulations(FILE *output_file, FILE *dynamic_field_ou
         }else if(cli_args.output_format == OUTPUT_TRAVERSABLE_SUCCESSES){
             fprintf(output_file,"%d ", pedestrian_set.traversable_statistics.num_successes);
         }else if(cli_args.output_format == OUTPUT_DEAD_PEDESTRIANS){
-            fprintf(output_file, "%d ", pedestrian_set.num_pedestrians_dead);
+            fprintf(output_file,"%d ", pedestrian_set.num_pedestrians_dead);
         }
 
         copy_integer_grid(obstacle_grid, obstacle_grid_aux); // Restores the grid

@@ -56,6 +56,7 @@ bool is_environment_empty();
 void reset_pedestrian_state();
 void reset_pedestrians_structures();
 void verify_dead_pedestrians();
+int count_pedestrians();
 
 extern Int_Grid pedestrian_position_grid;
 extern Pedestrian_Set pedestrian_set;

@@ -484,6 +484,19 @@ bool is_environment_empty()
     return true;
 }
 
+int count_pedestrians()
+{
+    int count = 0;
+    for(int p_index = 0; p_index < pedestrian_set.num_pedestrians; p_index++)
+    {
+        Pedestrian current_pedestrian = pedestrian_set.list[p_index];
+        if(current_pedestrian->state != GOT_OUT && current_pedestrian->state != DEAD)
+            count++;
+    }
+
+    return count;
+}
+
 /**
  * Reset the pedestrian_position_grid and update it with the current position of all pedestrians still in the environment.
 */
